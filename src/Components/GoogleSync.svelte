@@ -42,7 +42,7 @@
         const apiKey = 'AIzaSyCcD8We_Nrh8tY42lP5X38OpZtrfdiuZjs';
         const spreadsheetId = '1P0gzwKMG_eBiPfgdaI3Ah2ABkAjJF1-eOpxms3nHy7A';
         const currentYear = new Date().getFullYear();
-        const range = `Purchases${currentYear}!A2:E`;
+        const range = `Purchases${currentYear}!A2:F`;
 
         if (!tokenResponse || !tokenResponse.access_token) return;
         const { access_token } = tokenResponse;
