@@ -8,13 +8,15 @@
     function toLocal(remote){
         const result = {};
         for (const row of remote) {
-            const [ID, Date, Category, Amount, Currency] = row;
+            const [ID, DateStr, Category, Amount, Currency, Note] = row;
+            const date = new Date(DateStr);
             result[ID] = {
                 id: ID,
-                date: Date,
+                date: date,
                 category: Category,
                 amount: Amount,
                 currency: Currency,
+                note: Note || "",
                 sync: true
             };
         };
@@ -63,7 +65,7 @@
 
         for (const [, item] of filteredData) {
             try {
-            const data_to_append = [item.id, item.date, item.category, item.amount, item.currency];
+            const data_to_append = [item.id, item.date.toISOString().split('T')[0], item.category, item.amount, item.currency, item.note];
             const response = await fetch(append_row_uri, {
                 method: 'POST',
                 body: JSON.stringify({ values: [data_to_append] }),

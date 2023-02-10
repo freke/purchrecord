@@ -46,9 +46,10 @@
               {cardData.amount} {cardData.currency}
             </div>
             <div style="font-size: smaller">
-              {cardData.date}
+              {cardData.date.toISOString().split('T')[0]}
             </div>
-            {cardData.category}
+            <div>{cardData.category}</div>
+            <div>{cardData.note}</div>
           </Content>
         </Card>
       </Cell>
