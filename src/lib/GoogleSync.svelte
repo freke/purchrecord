@@ -1,8 +1,13 @@
 <script>
-    import Fab, { Icon } from '@smui/fab';
-    import { purchases } from '../stores'
+    import { purchases } from '../stores/purchases'
+    import "beercss";
+	import "material-dynamic-colors";
 
     const clientId = "732312482119-fs9q45r0j0pmfmjm1dren2hr9dodk8fn.apps.googleusercontent.com";
+    //const range = `Purchases${new Date().getFullYear()}!A2:F`;
+    const range = `PurchasesDev!A2:F`;
+    const apiKey = 'AIzaSyCcD8We_Nrh8tY42lP5X38OpZtrfdiuZjs';
+    const spreadsheetId = '1P0gzwKMG_eBiPfgdaI3Ah2ABkAjJF1-eOpxms3nHy7A';
     let tokenClient;
 
     function toLocal(remote){
@@ -38,27 +43,27 @@
         tokenClient.requestAccessToken();
     }
 
-    const handleCredentialResponse = async (tokenResponse) => {
-        const apiKey = 'AIzaSyCcD8We_Nrh8tY42lP5X38OpZtrfdiuZjs';
-        const spreadsheetId = '1P0gzwKMG_eBiPfgdaI3Ah2ABkAjJF1-eOpxms3nHy7A';
-        const currentYear = new Date().getFullYear();
-        const range = `Purchases${currentYear}!A2:F`;
-
-        if (!tokenResponse || !tokenResponse.access_token) return;
-        const { access_token } = tokenResponse;
-
+    async function getPurchases(access_token) {
         try {
+            
             const get_rows_uri = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?key=${apiKey}`;
             const response = await fetch(get_rows_uri, { headers: new Headers({ Authorization: `Bearer ${access_token}` }) });
             const { values } = await response.json();
 
             if (values) {
-            const synched = toLocal(values);
-            $purchases = merge($purchases || {}, synched);
+                return toLocal(values);
             }
         } catch (error) {
             console.error(error);
         }
+        return {}
+    }
+
+    const handleCredentialResponse = async (tokenResponse) => {
+        if (!tokenResponse || !tokenResponse.access_token) return;
+        const { access_token } = tokenResponse;
+
+        $purchases = merge($purchases || {}, getPurchases(access_token));
 
         const append_row_uri = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}:append?includeValuesInResponse=true&insertDataOption=INSERT_ROWS&responseDateTimeRenderOption=FORMATTED_STRING&responseValueRenderOption=UNFORMATTED_VALUE&valueInputOption=USER_ENTERED&key=${apiKey}`;
         const filteredData = Object.entries($purchases || {}).filter(([, value]) => !('sync' in value) || value.sync === false);
@@ -103,9 +108,13 @@
     <script async defer src="https://accounts.google.com/gsi/client" on:load={gisInit}></script>
 </svelte:head>
 
-<Fab on:click={getToken}>
+<button class="circle small-elevate extra" on:click={getToken}>
+    <i>cloud_sync</i>
+</button>
+
+<!-- <Fab on:click={getToken}>
     <Icon class="material-icons">cloud_sync</Icon>
-</Fab>
+</Fab> -->
 
 
 <!-- <button on:click={saveAsCvs}>Download CSV</button> -->
