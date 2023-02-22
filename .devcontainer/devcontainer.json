@@ -11,5 +11,6 @@
 				"svelte.svelte-vscode"
 			]
 		}
-	}
+	},
+	"appPort": ["8080:8080"]
 }

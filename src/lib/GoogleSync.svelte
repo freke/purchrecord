@@ -1,19 +1,26 @@
-<script>
-    import { purchases } from '../stores/purchases'
+<script lang="ts">
+    import { purchases } from '../stores/purchases';
+    import type {Purchase} from '../stores/purchases';
+    import { deleted } from '../stores/deleted';
     import "beercss";
 	import "material-dynamic-colors";
 
     const clientId = "732312482119-fs9q45r0j0pmfmjm1dren2hr9dodk8fn.apps.googleusercontent.com";
-    //const range = `Purchases${new Date().getFullYear()}!A2:F`;
-    const range = `PurchasesDev!A2:F`;
+    //const purRange = `Purchases${new Date().getFullYear()}!A2:F`;
+    //const purSheetId = 242573883
+    const purRange = `PurchasesDev!A2:G`;
+    const purSheetId = 705934810
+    const delRange = `Deleted!A1:A`;
+    const delSheetId = 701309837
     const apiKey = 'AIzaSyCcD8We_Nrh8tY42lP5X38OpZtrfdiuZjs';
     const spreadsheetId = '1P0gzwKMG_eBiPfgdaI3Ah2ABkAjJF1-eOpxms3nHy7A';
     let tokenClient;
 
-    function toLocal(remote){
-        const result = {};
+    function toLocal(remote, row=1){
+        const result = {} as { [id: string]: Purchase };
+        let row_num = row;
         for (const row of remote) {
-            const [ID, DateStr, Category, Amount, Currency, Note] = row;
+            const [ID, DateStr, Category, Amount, Currency, Note, Image] = row;
             const date = new Date(DateStr);
             result[ID] = {
                 id: ID,
@@ -22,8 +29,11 @@
                 amount: Amount,
                 currency: Currency,
                 note: Note || "",
-                sync: true
+                sync: true,
+                row: row_num,
+                image: Image
             };
+            row_num = row_num+1;
         };
         return result;
     }
@@ -35,6 +45,7 @@
             } else {
                 dict1[key]['sync'] = true;
             }
+            dict1[key]['row'] = dict2[key]['row']
         }
         return dict1;
     }
@@ -45,11 +56,7 @@
 
     async function getPurchases(access_token) {
         try {
-            
-            const get_rows_uri = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?key=${apiKey}`;
-            const response = await fetch(get_rows_uri, { headers: new Headers({ Authorization: `Bearer ${access_token}` }) });
-            const { values } = await response.json();
-
+            const { values } = await getRow(purRange, access_token);
             if (values) {
                 return toLocal(values);
             }
@@ -59,48 +66,160 @@
         return {}
     }
 
+    function getContentTypeFromDataURL(dataURL) {
+        const match = dataURL.match(/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+).*,.*/);
+        if (match && match.length > 1) {
+            return match[1];
+        }
+        return null;
+    }
+
+    async function uploadImage(dataUrl, access_token) {
+        const headers = new Headers();
+        headers.append('Authorization', `Bearer ${access_token}`);
+        headers.append('Content-Type', 'multipart/related; boundary=foo_bar_baz');
+        const image =  await fetch(dataUrl).then((res) => res.blob());
+        const fileMetadata = {
+            name: 'recipi.jpg',
+            parents: ["1nPSN4U6jaCu386SHyZtO-f1nOrtV1Byp"],
+        };
+        //const blob = `--foo_bar_baz\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${json}\r\n--foo_bar_baz\r\nContent-Type: ${getContentTypeFromDataURL(dataUrl)}\r\n\r\n${image}\r\n--foo_bar_baz--\r\n`
+
+        const blob = new Blob([
+            '--foo_bar_baz',
+            '\r\n',
+            'Content-Type: application/json; charset=UTF-8',
+            '\r\n\r\n',
+            JSON.stringify(fileMetadata),
+            '\r\n',
+            '--foo_bar_baz',
+            '\r\n',
+            `Content-Type: ${getContentTypeFromDataURL(dataUrl)}`,
+            '\r\n\r\n',
+            new Blob([image], { type: image.type }),
+            '\r\n',
+            '--foo_bar_baz--',
+            '\r\n',
+            ], { type: 'multipart/related' })
+        const response = await fetch(`https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`,
+        {
+            method: 'POST',
+            headers,
+            body: blob
+        }
+        );
+        const jsonResponse = await response.json();
+        const fileId = jsonResponse.id;
+        return `https://drive.google.com/uc?export=view&id=${fileId}`;
+    }
+
+    async function addPurchases(new_purchases, access_token) {
+        if(!new_purchases.length) {
+            return {}
+        }
+        try {
+            new_purchases = await Promise.all(new_purchases.map(async ([,item]) => {
+                let row = [item.id, item.date.toISOString(), item.category, item.amount, item.currency, item.note];
+                if(item.image && item.image != ''){
+                    let image_url = await uploadImage(item.image, access_token);
+                    row.push(image_url)
+                }
+                return row;
+            }));
+            const values = await addRows(purRange, new_purchases, access_token)
+            const match = values.updates.updatedData.range.match(/!\D+(\d+)/);
+            return toLocal(values.updates.updatedData.values || [], parseInt(match[1]));
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function delPurchases(rows, access_token) {
+        return deleteRow($deleted.map((del) => del.row), access_token)
+    }
+
+    async function getDelPurchases(access_token) {
+        try {
+            const {values} = await getRow(delRange, access_token);
+            return values;
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function getRow(rowId, accessToken) {
+        const get_rows_uri = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${rowId}?key=${apiKey}`;
+        const response = await fetch(get_rows_uri, { headers: new Headers({ Authorization: `Bearer ${accessToken}` }) });
+        return await response.json();
+    }
+
+    async function deleteRow(rowIds, accessToken) {
+        if(rowIds.length === 0){
+            return;
+        }
+        rowIds.sort((a, b) => b - a);
+        let requests =rowIds.map((row) =>
+                ({
+                    "deleteDimension": {
+                        "range": {
+                        "sheetId": purSheetId,
+                        "dimension": "ROWS",
+                        "startIndex": row,
+                        "endIndex": row+1
+                        }
+                    }
+                })
+            );
+
+        const request = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate?key=${apiKey}`, {
+            method: 'POST',
+            body: JSON.stringify({ requests: requests }),
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        const response = await request.json();
+        return response;
+    }
+
+    async function addRows(rowId, values, accessToken){
+        const options = "includeValuesInResponse=true&insertDataOption=INSERT_ROWS&responseDateTimeRenderOption=FORMATTED_STRING&responseValueRenderOption=UNFORMATTED_VALUE&valueInputOption=USER_ENTERED"
+        const append_row_uri = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${rowId}:append?${options}&key=${apiKey}`;
+        const response = await fetch(append_row_uri, {
+            method: 'POST',
+            body: JSON.stringify({ values: values }),
+            headers: new Headers({ Accept: 'application/json', 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` }),
+        });
+        return await response.json();
+    }
+
     const handleCredentialResponse = async (tokenResponse) => {
         if (!tokenResponse || !tokenResponse.access_token) return;
         const { access_token } = tokenResponse;
 
-        $purchases = merge($purchases || {}, getPurchases(access_token));
-
-        const append_row_uri = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}:append?includeValuesInResponse=true&insertDataOption=INSERT_ROWS&responseDateTimeRenderOption=FORMATTED_STRING&responseValueRenderOption=UNFORMATTED_VALUE&valueInputOption=USER_ENTERED&key=${apiKey}`;
-        const filteredData = Object.entries($purchases || {}).filter(([, value]) => !('sync' in value) || value.sync === false);
-
-        for (const [, item] of filteredData) {
-            try {
-            const data_to_append = [item.id, item.date.toISOString().split('T')[0], item.category, item.amount, item.currency, item.note];
-            const response = await fetch(append_row_uri, {
-                method: 'POST',
-                body: JSON.stringify({ values: [data_to_append] }),
-                headers: new Headers({ Accept: 'application/json', 'Content-Type': 'application/json', Authorization: `Bearer ${access_token}` }),
-            });
-            await response.json();
-            $purchases[item.id].sync = true;
-            } catch (error) {
-            console.error(error);
-            }
+        const toDelete = await getDelPurchases(access_token);
+        if(toDelete){
+            $purchases = Object.fromEntries(Object.entries($purchases).filter(([key]) => !toDelete.flat().includes(key)));
+            $deleted = $deleted.filter(val => !toDelete.includes(val));
         }
+        await addRows(delRange, $deleted.map((d) => [d.id] ), access_token);
+        await delPurchases($deleted, access_token);
+
+        const filteredData = Object.entries($purchases || {})
+            .filter(([, value]) => !('sync' in value) || value.sync === false);
+        await addPurchases(filteredData, access_token);
+
+        $purchases = merge(await getPurchases(access_token), $purchases || {});
+        $deleted = []
     }
 
     function gisInit() {
         tokenClient = google.accounts.oauth2.initTokenClient({
             client_id: clientId,
-            scope: 'https://www.googleapis.com/auth/spreadsheets',
+            scope: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive',
             callback: handleCredentialResponse,
         });
-    }
-
-    function convertArrayToCSV(dataArray) {
-        const csvData = Object.keys(dataArray[0]).join(',') + '\n' + dataArray.map(row => Object.values(row).join(',')).join('\n');
-        return csvData;
-    }
-
-    function saveAsCvs(){
-        const csvData = convertArrayToCSV(Object.values(records).map(item => { return {'date': item.date, 'amount': item.amount, 'currency': item.currency, 'category': item.category} }));
-        const blob = new Blob([csvData], {type: 'text/csv;charset=utf-8'});
-        saveAs(blob, 'data.csv');
     }
 </script>
 
@@ -108,13 +227,9 @@
     <script async defer src="https://accounts.google.com/gsi/client" on:load={gisInit}></script>
 </svelte:head>
 
-<button class="circle small-elevate extra" on:click={getToken}>
+
+<button class="extend circle small-elevate extra" on:click={getToken}>
     <i>cloud_sync</i>
+    <span>Sync</span>
 </button>
 
-<!-- <Fab on:click={getToken}>
-    <Icon class="material-icons">cloud_sync</Icon>
-</Fab> -->
-
-
-<!-- <button on:click={saveAsCvs}>Download CSV</button> -->

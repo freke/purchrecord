@@ -4,8 +4,7 @@
     import { v4 as uuidv4 } from 'uuid';
     import {purchases} from '../stores/purchases';
     import type {Purchase} from '../stores/purchases';
-    
-   
+
     let formData: Purchase = {
       id: uuidv4(),
       date: new Date(),
@@ -13,11 +12,31 @@
       currency: 'JPY',
       amount: 0.00,
       note: "",
+      image: '',
       sync: false,
+      row: null
     };
+
+    function handleImageCapture(event) {
+      const file = event.target.files[0];
+      const fileReader = new FileReader();
+      fileReader.readAsDataURL(file);
+      fileReader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          canvas.width = 320;
+          canvas.height = (img.height / img.width) * canvas.width;
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          const dataUrl = canvas.toDataURL(file.type);
+          formData.image=dataUrl;
+        };
+        img.src = event.target.result as string;
+      };
+    }
     
     function submitForm() {
-      formData.date = new Date(date);
       if($purchases == null){
         $purchases = {[formData.id]: formData};
       }else{
@@ -30,7 +49,16 @@
         currency: 'JPY',
         amount: 0.00,
         note: "",
-        sync: false
+        image: '',
+        sync: false,
+        row: null
+      }
+    }
+
+    function handleInput(event) {
+      const newDate = new Date(event.target.value);
+      if (!isNaN(newDate.getTime())) {
+        formData.date = new Date(newDate);
       }
     }
 
@@ -39,41 +67,46 @@
     $: date=formData.date.toISOString().substring(0, 10)
 </script>
 
-<form on:submit|preventDefault={submitForm}>
-  <div class="field label border">
-    <input type="date" bind:value={date}>
-    <label>Date</label>
-  </div>
-  <div class="field label border">
-    <input type="text" bind:value={formData.category}>
-    <label>Category</label>
-  </div>
-  <div class="field label suffix border">
-    <select>
-      {#each currencies as currency}
-        <option>{currency}</option>
-      {/each}
-    </select>
-    <label class="active">Currency</label>
-    <i>arrow_drop_down</i>
-  </div>
-  <div class="field textarea label border">
-    <textarea  bind:value={formData.note}></textarea>
-    <label>Note</label>
-  </div>
-  <button class="small-elevate fill">Submit</button>
-    <!-- <Textfield type="date" bind:value={date} label="Date" />
-    <Textfield type="text" bind:value={formData.category} label="Category" />
-    <Textfield bind:value={formData.amount} label="Amount" />
-    <Select bind:value={formData.currency} label="Currency">
+<article>
+  <form on:submit|preventDefault={submitForm}>
+    <div class="field label border">
+      <input id="date" type="date" bind:value={date} on:input={handleInput}>
+      <label for="date">Date</label>
+    </div>
+    <div class="field label border">
+      <input id="amount" type="text" bind:value={formData.amount}>
+      <label for="amount">Amount</label>
+    </div>
+    <div class="field label border">
+      <input id="category" type="text" bind:value={formData.category}>
+      <label for="category">Category</label>
+    </div>
+    <div class="field label suffix border">
+      <select id="currency">
         {#each currencies as currency}
-            <Option value={currency}>{currency}</Option>
+          <option>{currency}</option>
         {/each}
-    </Select>
-    <Textfield textarea bind:value={formData.note} label="Note">
-    </Textfield>
-    <Button variant="raised">
-        Submit
-    </Button> -->
-</form>
-
+      </select>
+      <label for="currency" class="active">Currency</label>
+      <i>arrow_drop_down</i>
+    </div>
+    <div class="field textarea label border">
+      <textarea id="note" bind:value={formData.note}></textarea>
+      <label for="note">Note</label>
+    </div>
+    <div class="field label prefix border">
+        <i>photo_camera</i>
+        <input id="photo" type="text">
+        <input id="photo_file" type="file" accept="image/*" capture on:change={handleImageCapture} bind:value={formData.image} />
+        <label for="photo">File</label>
+    </div>
+    <div class="row right-align">
+      <button class="small-elevate fill">Submit</button>
+    </div>
+    {#if formData.image}
+      <div class="row center-align">
+        <img src="{formData.image}" alt="Receipt"/>
+      </div>
+    {/if}
+  </form>
+</article>
