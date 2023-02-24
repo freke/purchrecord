@@ -6,10 +6,10 @@
 	import "material-dynamic-colors";
 
     const clientId = "732312482119-fs9q45r0j0pmfmjm1dren2hr9dodk8fn.apps.googleusercontent.com";
-    const purRange = `Purchases${new Date().getFullYear()}!A2:G`;//Release
+    const purRange = `Purchases${new Date().getFullYear()}!A2:G`; //Release
     const purSheetId = 242573883 //Release
     //const purRange = `PurchasesDev!A2:G`; //Dev
-    //const purSheetId = 705934810; //Dev
+    //const purSheetId = 705934810 //Dev
     const delRange = `Deleted!A1:A`;
     const delSheetId = 701309837
     const apiKey = 'AIzaSyCcD8We_Nrh8tY42lP5X38OpZtrfdiuZjs';
