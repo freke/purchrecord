@@ -5,6 +5,7 @@
   import {purchases} from '../stores/purchases';
   import {rate} from '../stores/rates';
   import { deleted } from '../stores/deleted';
+  import Form from './Form.svelte';
 
   onMount(async () => {   
     if (!$rate || $rate.date == null || ((new Date()).getTime() - $rate.date.getTime()) > 86400000) {
@@ -16,9 +17,11 @@
 
   let selectedItem;
   let showConfirmDialog = false;
+  let showEditDialog = false;
+  let showImageDialog = false;
 
   function delete_id(purcahse){
-    selectedItem = purcahse
+    selectedItem = purcahse;
     showConfirmDialog = true;
   }
 
@@ -35,9 +38,26 @@
     showConfirmDialog = false;
   }
 
-  function cancel_delete_id(){
+  function cancel_dialog(){
     selectedItem = null;
     showConfirmDialog = false;
+    showEditDialog = false;
+    showImageDialog = false;
+  }
+
+  function edit_purchase(purcahse){
+    selectedItem = purcahse;
+    showEditDialog = true;
+  }
+
+  function save_edit(){
+    selectedItem = null;
+    showEditDialog = false;
+  }
+
+  function show_image(purcahse) {
+    selectedItem = purcahse;
+    showImageDialog = true;
   }
 
   $: pur = $purchases ? Object.entries($purchases).sort(([,a],[,b]) => (a.date.getTime() - b.date.getTime())) : [];
@@ -49,15 +69,31 @@
   }
 </style>
 
-<div class="overlay" class:active={showConfirmDialog}></div>
+<div class="overlay" class:active={showConfirmDialog || showEditDialog}></div>
 <div class="modal" class:active={showConfirmDialog}>
   <h5>Warning</h5>
   <div>Are you sure you want to delete?</div>
   <nav class="right-align">
-    <button class="border" on:click={cancel_delete_id}>Cancel</button>
+    <button class="border" on:click={cancel_dialog}>Cancel</button>
     <button on:click={confirm_delete_id}>Confirm</button>
   </nav>
 </div>
+
+<div class="modal max" class:active={showEditDialog}>
+  <h5>Edit</h5>
+  <Form submitFunction={save_edit} cancelFunction={cancel_dialog} formData={selectedItem}/>
+</div>
+
+{#if selectedItem}
+<div class="modal" class:active={showImageDialog}>
+  <div class="row center-align">
+    <img src="{selectedItem.image}" alt=""/>
+  </div>
+  <nav class="right-align">
+    <button class="border" on:click={cancel_dialog}>Close</button>
+  </nav>
+</div>
+{/if}
 
 {#each pur as [id, cardData]}
 <div class="row">
@@ -68,13 +104,22 @@
     <p class="small-text">{cardData.note}</p>
   </div>
   {#if cardData.image}
-  <a href={cardData.image}>
-    <i>image</i>
-  </a>
+    {#if cardData.sync}
+    <a href={cardData.image}>
+      <i>satellite</i>
+    </a>
+    {:else}
+    <button class="transparent circle" on:click={() => show_image(cardData)}>
+      <i>image</i>
+    </button>
+    {/if}
   {/if}
-  <button class="transparent circle">
+
+  {#if !cardData.sync}
+  <button class="transparent circle" on:click={() => edit_purchase(cardData)}>
     <i>edit</i>
   </button>
+  {/if}
   <button class="transparent circle" on:click={() => delete_id(cardData)}>
     <i>delete</i>
   </button>

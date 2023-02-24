@@ -1,21 +1,52 @@
 <script lang="ts">
+    import { onMount } from 'svelte';
     import "beercss";
 	  import "material-dynamic-colors";
     import { v4 as uuidv4 } from 'uuid';
     import {purchases} from '../stores/purchases';
     import type {Purchase} from '../stores/purchases';
 
-    let formData: Purchase = {
-      id: uuidv4(),
+    export let submitFunction = () => {};
+    export let cancelFunction = () => {};
+    export let formData: Purchase  = {
+      id: null,
       date: new Date(),
       category: null,
       currency: 'JPY',
       amount: 0.00,
-      note: "",
-      image: '',
+      note: null,
+      image: null,
       sync: false,
       row: null
     };
+
+    $: formData = formData ? formData : {
+        id: null,
+        date: new Date(),
+        category: null,
+        currency: 'JPY',
+        amount: 0.00,
+        note: null,
+        image: null,
+        sync: false,
+        row: null
+      }
+    
+    $: isNew = !formData.id;
+
+    function resetFromData() {
+      formData = {
+        id: null,
+        date: new Date(),
+        category: null,
+        currency: 'JPY',
+        amount: 0.00,
+        note: null,
+        image: null,
+        sync: false,
+        row: null
+      }
+    }
 
     function handleImageCapture(event) {
       const file = event.target.files[0];
@@ -36,23 +67,22 @@
       };
     }
     
-    function submitForm() {
+    function submitForm(event) {
+      event.preventDefault();
+      formData.id = formData.id ? formData.id : uuidv4();
       if($purchases == null){
         $purchases = {[formData.id]: formData};
       }else{
         $purchases[formData.id] = formData
       }
-      formData = {
-        id: uuidv4(),
-        date: new Date(),
-        category: null,
-        currency: 'JPY',
-        amount: 0.00,
-        note: "",
-        image: '',
-        sync: false,
-        row: null
-      }
+      submitFunction();
+      resetFromData();
+    }
+
+    function resetFrom(event){
+      event.preventDefault();
+      cancelFunction();
+      resetFromData();
     }
 
     function handleInput(event) {
@@ -64,11 +94,11 @@
 
     let currencies = ['JPY', 'SEK'];
 
-    $: date=formData.date.toISOString().substring(0, 10)
+    $: date= formData.date.toISOString().substring(0, 10);
 </script>
 
 <article>
-  <form on:submit|preventDefault={submitForm}>
+  <form>
     <div class="field label border">
       <input id="date" type="date" bind:value={date} on:input={handleInput}>
       <label for="date">Date</label>
@@ -82,9 +112,9 @@
       <label for="category">Category</label>
     </div>
     <div class="field label suffix border">
-      <select id="currency">
+      <select id="currency" bind:value={formData.currency}>
         {#each currencies as currency}
-          <option>{currency}</option>
+          <option value={currency}>{currency}</option>
         {/each}
       </select>
       <label for="currency" class="active">Currency</label>
@@ -101,7 +131,8 @@
         <label for="photo">File</label>
     </div>
     <div class="row right-align">
-      <button class="small-elevate fill">Submit</button>
+      <button class="border" on:click={resetFrom}>Cancel</button>
+      <button class="small-elevate" on:click={submitForm}>{isNew ? 'Create' : 'Update'}</button>
     </div>
     {#if formData.image}
       <div class="row center-align">
