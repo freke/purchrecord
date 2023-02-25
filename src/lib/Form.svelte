@@ -99,7 +99,7 @@
       <label for="date">Date</label>
     </div>
     <div class="field label border">
-      <input id="amount" type="text" bind:value={formData.amount}>
+      <input id="amount" type="number" bind:value={formData.amount}>
       <label for="amount">Amount</label>
     </div>
     <div class="field label border">
