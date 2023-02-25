@@ -5,6 +5,7 @@
     import {purchases} from '../stores/purchases';
     import type {Purchase} from '../stores/purchases';
     import DateInput from './DateInput.svelte';
+    import Device from 'svelte-device-info'
 
     export let submitFunction = () => {};
     export let cancelFunction = () => {};
@@ -118,6 +119,7 @@
       <textarea id="note" bind:value={formData.note}></textarea>
       <label for="note">Note</label>
     </div>
+    {#if Device.isMobile}
     <label class="switch">
       <input type="checkbox" bind:checked={use_camera}>
       <span>
@@ -125,14 +127,19 @@
         <i>photo_camera</i>
       </span>
     </label>
+    {/if}
     <div class="field label prefix border middle-align">
-      {#if use_camera}
+      {#if use_camera && Device.isMobile}
         <i>photo_camera</i>
       {:else}
         <i>description</i>
       {/if}
       <input id="photo" type="text">
-      <input id="photo_file" type="file" accept="image/*" capture={use_camera} on:change={handleImageCapture} bind:value={formData.image} />
+      {#if use_camera && Device.isMobile}
+        <input id="photo_file" type="file" accept="image/*"  capture="environment" on:change={handleImageCapture} bind:value={formData.image} />
+      {:else}
+        <input id="photo_file" type="file" accept="image/*" on:change={handleImageCapture} bind:value={formData.image} />
+      {/if}
       <label for="photo">File</label>
     </div>
     <div class="row right-align">
