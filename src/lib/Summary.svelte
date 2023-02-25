@@ -16,11 +16,11 @@
     const thisMonth = dayjs();
     const lastMonth = dayjs().subtract(1,'month');
 
-    $: sum = $purchases ? Object.entries($purchases).filter(([_, value]: [string, Purchase]) => dayjs(value.date).month() === thisMonth.month()).reduce((t, [_, value]: [string, Purchase]) => t + convertToJPY(value.amount, value.currency), 0) : 0;
-    $: last_month_sum = $purchases ? Object.entries($purchases).filter(([_, value]: [string, Purchase]) => dayjs(value.date).month() === lastMonth.month()).reduce((t, [_, value]: [string, Purchase]) => t + convertToJPY(value.amount, value.currency), 0) : 0;
+    $: sum = $purchases ? Object.entries($purchases).filter(([_, value]: [string, Purchase]) => dayjs(value.date).month() === thisMonth.month()).reduce((t, [_, value]: [string, Purchase]) => t + convertToJPY(value.amount, value.currency), 0).toFixed(2) : "0.00";
+    $: last_month_sum = $purchases ? Object.entries($purchases).filter(([_, value]: [string, Purchase]) => dayjs(value.date).month() === lastMonth.month()).reduce((t, [_, value]: [string, Purchase]) => t + convertToJPY(value.amount, value.currency), 0).toFixed(2) : "0.00";
     $: all_synced = (Object.entries($purchases).reduce((t, [_,value]: [string, Purchase]) => t && value.sync, true) && $deleted.length === 0)
 </script>
 
 <i class="absolute right top" class:red-text={!all_synced} class:green-text={all_synced}>{all_synced ? 'check_circle' : 'error'}</i>
-<h5>Total {thisMonth.format('MMM')}: {sum.toFixed(2)} JPY</h5>
-<h7>Total {lastMonth.format('MMM')}: {last_month_sum.toFixed(2)} JPY</h7>
+<h5>Total {thisMonth.format('MMM')}: {sum} JPY</h5>
+<h7>Total {lastMonth.format('MMM')}: {last_month_sum} JPY</h7>
