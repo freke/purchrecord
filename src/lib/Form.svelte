@@ -21,6 +21,8 @@
       row: null
     };
 
+    let use_camera = false;
+
     $: formData = formData ? formData : {
         id: null,
         date: new Date(),
@@ -86,13 +88,6 @@
       resetFromData();
     }
 
-    function handleInput(event) {
-      const newDate = new Date(event.target.value);
-      if (!isNaN(newDate.getTime())) {
-        formData.date = newDate;
-      }
-    }
-
     let currencies = ['JPY', 'SEK'];
 
 </script>
@@ -124,11 +119,22 @@
       <textarea id="note" bind:value={formData.note}></textarea>
       <label for="note">Note</label>
     </div>
-    <div class="field label prefix border">
+    <label class="switch">
+      <input type="checkbox" bind:checked={use_camera}>
+      <span>
+        <i>photo_library</i>
         <i>photo_camera</i>
-        <input id="photo" type="text">
-        <input id="photo_file" type="file" accept="image/*" capture on:change={handleImageCapture} bind:value={formData.image} />
-        <label for="photo">File</label>
+      </span>
+    </label>
+    <div class="field label prefix border middle-align">
+      {#if use_camera}
+        <i>photo_camera</i>
+      {:else}
+        <i>description</i>
+      {/if}
+      <input id="photo" type="text">
+      <input id="photo_file" type="file" accept="image/*" capture={use_camera} on:change={handleImageCapture} bind:value={formData.image} />
+      <label for="photo">File</label>
     </div>
     <div class="row right-align">
       <button class="border" on:click={resetFrom}>Cancel</button>

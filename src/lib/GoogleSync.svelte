@@ -4,9 +4,10 @@
     import { deleted } from '../stores/deleted';
     import "beercss";
 	import "material-dynamic-colors";
+    import * as dayjs from 'dayjs';
 
     const clientId = "732312482119-fs9q45r0j0pmfmjm1dren2hr9dodk8fn.apps.googleusercontent.com";
-    const purRange = `Purchases${new Date().getFullYear()}!A2:G`; //Release
+    const purRange = `Purchases${dayjs().year()}!A2:G`; //Release
     const purSheetId = 242573883 //Release
     //const purRange = `PurchasesDev!A2:G`; //Dev
     //const purSheetId = 705934810 //Dev
@@ -21,12 +22,11 @@
         let row_num = row;
         for (const row of remote) {
             const [ID, DateStr, Category, Amount, Currency, Note, Image] = row;
-            const date = new Date(DateStr);
             result[ID] = {
                 id: ID,
-                date: date,
+                date: dayjs(DateStr).toDate(),
                 category: Category,
-                amount: Amount,
+                amount: parseFloat(Amount.replace(/,/g, '')),
                 currency: Currency,
                 note: Note || "",
                 sync: true,
@@ -119,7 +119,7 @@
         }
         try {
             new_purchases = await Promise.all(new_purchases.map(async ([,item]) => {
-                let row = [item.id, item.date.toISOString(), item.category, item.amount, item.currency, item.note];
+                let row = [item.id, item.date, item.category, item.amount, item.currency, item.note];
                 if(item.image && item.image != ''){
                     let image_url = await uploadImage(item.image, access_token);
                     row.push(image_url)
