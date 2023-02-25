@@ -3,6 +3,7 @@
   import "beercss";
 	import "material-dynamic-colors";
   import {purchases} from '../stores/purchases';
+  import type {Purchase} from '../stores/purchases';
   import {rate} from '../stores/rates';
   import { deleted } from '../stores/deleted';
   import Form from './Form.svelte';
@@ -63,7 +64,7 @@
     showImageDialog = true;
   }
 
-  $: pur = $purchases ? Object.entries($purchases).sort(([,a],[,b]) => (dayjs(a.date) - dayjs(b.date))) : [];
+$: pur = $purchases ? Object.entries($purchases).sort(([,a]: [string, Purchase],[,b]: [string, Purchase]) => (dayjs(a.date).isAfter(dayjs(b.date)) ? 1 : -1)).map(([,a]: [string, Purchase]) => a) : [];
 </script>
 
 <style>
@@ -98,11 +99,11 @@
 </div>
 {/if}
 
-{#each pur as [id, cardData]}
+{#each pur as cardData}
 <div class="row">
   <i class:red-text={!cardData.sync} class:green-text={cardData.sync}>{cardData.sync ? 'check_circle' : 'error'}</i>
   <div class="max">
-    <div><span class="large bold">{cardData.amount} {cardData.currency}</span> <span>{cardData.category || ''}</span></div>
+    <div><span class="large bold">{cardData.amount.toFixed(2)} {cardData.currency}</span> <span>{cardData.category || ''}</span></div>
     <div class="small-text">{dayjs(cardData.date).format('L')}</div>
     <p class="small-text">{cardData.note}</p>
   </div>

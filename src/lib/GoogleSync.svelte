@@ -207,7 +207,7 @@
         await delPurchases($deleted, access_token);
 
         const filteredData = Object.entries($purchases || {})
-            .filter(([, value]) => !('sync' in value) || value.sync === false);
+            .filter(([, value]: [string, Purchase]) => !('sync' in value) || value.sync === false);
         await addPurchases(filteredData, access_token);
 
         $purchases = merge(await getPurchases(access_token), $purchases || {});

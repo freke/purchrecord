@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
     import "beercss";
 	  import "material-dynamic-colors";
     import { v4 as uuidv4 } from 'uuid';
@@ -14,7 +13,7 @@
       date: new Date(),
       category: null,
       currency: 'JPY',
-      amount: 0.00,
+      amount: null,
       note: null,
       image: null,
       sync: false,
@@ -28,7 +27,7 @@
         date: new Date(),
         category: null,
         currency: 'JPY',
-        amount: 0.00,
+        amount: null,
         note: null,
         image: null,
         sync: false,
@@ -43,7 +42,7 @@
         date: new Date(),
         category: null,
         currency: 'JPY',
-        amount: 0.00,
+        amount: null,
         note: null,
         image: null,
         sync: false,
