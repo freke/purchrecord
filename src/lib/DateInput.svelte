@@ -1,9 +1,8 @@
-<script>
-    import { onMount } from 'svelte'
-    import dayjs from 'dayjs'
+<script lang="ts">
+    import * as dayjs from 'dayjs';
   
     export let format = 'YYYY-MM-DD'
-      export let date = new Date()
+    export let date = new Date()
       
     let internal
   
