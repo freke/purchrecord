@@ -799,6 +799,11 @@ svelte-check@^2.10.3:
     svelte-preprocess "^4.0.0"
     typescript "*"
 
+svelte-device-info@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/svelte-device-info/-/svelte-device-info-1.0.0.tgz#761b4199ccf999d1e99238f938502253384d13ab"
+  integrity sha512-KL5/fXmhKVtM4ogoj9xrFTPjoWtTy/a8VFA5kEooIJiL48+aETCG2/owMvrsoyBRybUkzVf4ixkj+DncpNWMqw==
+
 svelte-hmr@^0.15.1:
   version "0.15.1"
   resolved "https://registry.yarnpkg.com/svelte-hmr/-/svelte-hmr-0.15.1.tgz#d11d878a0bbb12ec1cba030f580cd2049f4ec86b"
