@@ -88,7 +88,7 @@
     function handleInput(event) {
       const newDate = new Date(event.target.value);
       if (!isNaN(newDate.getTime())) {
-        formData.date = new Date(newDate);
+        formData.date = newDate;
       }
     }
 
@@ -100,7 +100,7 @@
 <article>
   <form>
     <div class="field label border">
-      <input id="date" type="date" bind:value={date} on:input={handleInput}>
+      <input id="date" type="date" bind:value={date} on:change={handleInput}>
       <label for="date">Date</label>
     </div>
     <div class="field label border">
