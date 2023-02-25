@@ -1,5 +1,5 @@
 <script lang="ts">
-    import * as dayjs from 'dayjs';
+    import dayjs from 'dayjs';
   
     export let format = 'YYYY-MM-DD'
     export let date = new Date()

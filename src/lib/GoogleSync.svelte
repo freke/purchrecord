@@ -4,7 +4,7 @@
     import { deleted } from '../stores/deleted';
     import "beercss";
 	import "material-dynamic-colors";
-    import * as dayjs from 'dayjs';
+    import dayjs from 'dayjs';
 
     const clientId = "732312482119-fs9q45r0j0pmfmjm1dren2hr9dodk8fn.apps.googleusercontent.com";
     const purRange = `Purchases${dayjs().year()}!A2:G`; //Release
