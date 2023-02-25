@@ -5,6 +5,7 @@
     import { v4 as uuidv4 } from 'uuid';
     import {purchases} from '../stores/purchases';
     import type {Purchase} from '../stores/purchases';
+    import DateInput from './DateInput.svelte';
 
     export let submitFunction = () => {};
     export let cancelFunction = () => {};
@@ -94,13 +95,12 @@
 
     let currencies = ['JPY', 'SEK'];
 
-    $: date= formData.date.toISOString().substring(0, 10);
 </script>
 
 <article>
   <form>
     <div class="field label border">
-      <input id="date" type="date" bind:value={date} on:change={handleInput}>
+      <DateInput bind:date={formData.date} />
       <label for="date">Date</label>
     </div>
     <div class="field label border">
