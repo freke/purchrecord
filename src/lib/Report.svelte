@@ -3,11 +3,10 @@
   import "beercss";
 	import "material-dynamic-colors";
   import {purchases} from '../stores/purchases';
-  import type {Purchase} from '../stores/purchases';
   import {rate} from '../stores/rates';
   import { deleted } from '../stores/deleted';
   import Form from './Form.svelte';
-  import * as dayjs from 'dayjs';
+  import dayjs from 'dayjs';
   import localizedFormat from 'dayjs/plugin/localizedFormat';
   dayjs.extend(localizedFormat);
 
