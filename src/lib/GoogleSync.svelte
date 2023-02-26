@@ -74,13 +74,13 @@
         return null;
     }
 
-    async function uploadImage(dataUrl, access_token) {
+    async function uploadImage(item, access_token) {
         const headers = new Headers();
         headers.append('Authorization', `Bearer ${access_token}`);
         headers.append('Content-Type', 'multipart/related; boundary=foo_bar_baz');
-        const image =  await fetch(dataUrl).then((res) => res.blob());
+        const image =  await fetch(item.image).then((res) => res.blob());
         const fileMetadata = {
-            name: 'recipi.jpg',
+            name: `${item.id}.jpg`,
             parents: ["1nPSN4U6jaCu386SHyZtO-f1nOrtV1Byp"],
         };
         //const blob = `--foo_bar_baz\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${json}\r\n--foo_bar_baz\r\nContent-Type: ${getContentTypeFromDataURL(dataUrl)}\r\n\r\n${image}\r\n--foo_bar_baz--\r\n`
@@ -94,7 +94,7 @@
             '\r\n',
             '--foo_bar_baz',
             '\r\n',
-            `Content-Type: ${getContentTypeFromDataURL(dataUrl)}`,
+            `Content-Type: ${getContentTypeFromDataURL(item.image)}`,
             '\r\n\r\n',
             new Blob([image], { type: image.type }),
             '\r\n',
@@ -121,7 +121,7 @@
             new_purchases = await Promise.all(new_purchases.map(async ([,item]) => {
                 let row = [item.id, item.date, item.category, item.amount, item.currency, item.note];
                 if(item.image && item.image != ''){
-                    let image_url = await uploadImage(item.image, access_token);
+                    let image_url = await uploadImage(item, access_token);
                     row.push(image_url)
                 }
                 return row;
