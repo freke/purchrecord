@@ -24,7 +24,7 @@
         if (existing) {
             existing.amount += convertToJPY(cur.amount, cur.currency);
         } else {
-            acc.push({ category: cur.category, amount: cur.amount, currency: cur.currency });
+            acc.push({ category: cur.category, amount: convertToJPY(cur.amount, cur.currency) });
         }
         return acc;
     }, []).sort((a, b) => a.category.localeCompare(b.category));
@@ -34,6 +34,6 @@
 <h7>Total {lastMonth.format('MMM')}: {last_month_sum} JPY</h7>
 <div class="space"></div>
 {#each sum_category as category}
-        <div class="row"><div class="max">{category.category}</div><div>{category.amount.toFixed(2)} {category.currency}</div> </div>
+        <div class="row"><div class="max">{category.category}</div><div>{category.amount.toFixed(2)} JPY</div> </div>
         <div class="divider"></div>
 {/each}
