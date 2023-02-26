@@ -9,6 +9,7 @@
   import Form from './Form.svelte';
   import dayjs from 'dayjs';
   import localizedFormat from 'dayjs/plugin/localizedFormat';
+  import Summary from './Summary.svelte';
   dayjs.extend(localizedFormat);
 
   onMount(async () => {   
@@ -19,6 +20,7 @@
     }
   });
 
+  let currentMonth = dayjs().startOf('month');
   let selectedItem;
   let showConfirmDialog = false;
   let showEditDialog = false;
@@ -64,7 +66,20 @@
     showImageDialog = true;
   }
 
-$: pur = $purchases ? Object.entries($purchases).sort(([,a]: [string, Purchase],[,b]: [string, Purchase]) => (dayjs(a.date).isAfter(dayjs(b.date)) ? 1 : -1)).map(([,a]: [string, Purchase]) => a) : [];
+  function isInCurrentMonth(date): boolean {
+    const currentDate = dayjs();
+    return currentDate.month() === date.month();
+  }
+
+  function nextMonth() {
+    currentMonth = currentMonth.add(1, 'month');
+  }
+
+  function prevMonth() {
+    currentMonth = currentMonth.subtract(1, 'month');
+  }
+
+  $: pur = $purchases ? Object.entries($purchases).filter(([,a]: [string, Purchase]) => dayjs(a.date).month() === currentMonth.month()).sort(([,a]: [string, Purchase],[,b]: [string, Purchase]) => (dayjs(a.date).isAfter(dayjs(b.date)) ? 1 : -1)).map(([,a]: [string, Purchase]) => a) : [];
 </script>
 
 <style>
@@ -72,6 +87,17 @@ $: pur = $purchases ? Object.entries($purchases).sort(([,a]: [string, Purchase],
     padding: 5px;
   }
 </style>
+
+{#if selectedItem}
+<div class="modal" class:active={showImageDialog}>
+  <div class="row center-align">
+    <img src="{selectedItem.image}" alt=""/>
+  </div>
+  <nav class="right-align">
+    <button class="border" on:click={cancel_dialog}>Close</button>
+  </nav>
+</div>
+{/if}
 
 <div class="overlay" class:active={showConfirmDialog || showEditDialog}></div>
 <div class="modal" class:active={showConfirmDialog}>
@@ -88,17 +114,24 @@ $: pur = $purchases ? Object.entries($purchases).sort(([,a]: [string, Purchase],
   <Form submitFunction={save_edit} cancelFunction={cancel_dialog} formData={selectedItem}/>
 </div>
 
-{#if selectedItem}
-<div class="modal" class:active={showImageDialog}>
-  <div class="row center-align">
-    <img src="{selectedItem.image}" alt=""/>
-  </div>
-  <nav class="right-align">
-    <button class="border" on:click={cancel_dialog}>Close</button>
-  </nav>
-</div>
-{/if}
 
+<article>
+<Summary  month={currentMonth} pur={pur}/>
+<div class="space"></div>
+<nav class="no-space">
+  <button class="border left-round max" on:click={prevMonth}>
+    <i>navigate_before</i>
+  </button>
+  <button class="border no-round max" class:fill={isInCurrentMonth(currentMonth)}>
+    <span>{currentMonth.format('MMM YYYY')}</span>
+  </button>
+  <button class="border right-round max" on:click={nextMonth}>
+    <i>navigate_next</i>
+  </button>
+</nav>
+</article>
+
+<div class="space"></div>
 {#each pur as cardData}
 <div class="row">
   <i class:red-text={!cardData.sync} class:green-text={cardData.sync}>{cardData.sync ? 'check_circle' : 'error'}</i>
