@@ -1,15 +1,12 @@
 <nav class="top">
 	<h5 class="max center-align">PurchRecord</h5>
+	<SyncStatus />
 </nav>
 <nav class="bottom">
 	<GoogleSync />
 </nav>
 <main class="responsive">	
 	<div>
-		<Summary />
-
-		<div class="medium-divider"></div>
-
 		<div class="tabs">
 		  <a class:active={activePage=='new'} on:click={() => activePage = 'new'}>
 			<i>add_circle</i>
@@ -33,10 +30,10 @@
 	import "beercss";
 	import "material-dynamic-colors";
 
-	import Summary from './lib/Summary.svelte';
 	import Form from './lib/Form.svelte';
 	import Records from './lib/Report.svelte';
 	import GoogleSync from './lib/GoogleSync.svelte';
+	import SyncStatus from './lib/SyncStatus.svelte';
 
 	let activePage = 'new';
 </script>
