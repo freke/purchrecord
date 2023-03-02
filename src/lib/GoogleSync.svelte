@@ -221,6 +221,8 @@
             callback: handleCredentialResponse,
         });
     }
+
+    $: all_synced = (Object.entries($purchases).reduce((t, [_,value]: [string, Purchase]) => t && value.sync, true) && $deleted.length === 0)
 </script>
 
 <svelte:head>
@@ -228,8 +230,12 @@
 </svelte:head>
 
 
-<button class="extend circle small-elevate extra" on:click={getToken}>
-    <i>cloud_sync</i>
+<button class="extend circle small-elevate" class:secondary={all_synced} on:click={getToken}>
+    {#if all_synced}
+    <i>cloud_done</i>
+    {:else}
+        <i>cloud_sync</i>
+    {/if}
     <span>Sync</span>
 </button>
 
