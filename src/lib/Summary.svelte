@@ -1,19 +1,13 @@
 <script lang="ts">
     import {purchases} from '../stores/purchases';
     import type {Purchase} from '../stores/purchases';
-    import {rate} from '../stores/rates';
+    import {convertToJPY} from '../stores/rates';
     import dayjs from 'dayjs';
     import localizedFormat from 'dayjs/plugin/localizedFormat';
     dayjs.extend(localizedFormat);
 
     export let month = dayjs()
     export let pur = []
-
-    function convertToJPY(amount:number, currency:string): number {
-        if($rate && currency == 'SEK')
-            return amount * $rate.rate;
-        return amount
-    }
 
     $: lastMonth = month.subtract(1,'month');
     $: sum = $purchases ? Object.entries($purchases).filter(([_, value]: [string, Purchase]) => dayjs(value.date).month() === month.month()).reduce((t, [_, value]: [string, Purchase]) => t + convertToJPY(value.amount, value.currency), 0).toFixed(2) : "0.00";

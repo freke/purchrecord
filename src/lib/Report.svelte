@@ -79,7 +79,7 @@
     currentMonth = currentMonth.subtract(1, 'month');
   }
 
-  $: pur = $purchases ? Object.entries($purchases).filter(([,a]: [string, Purchase]) => dayjs(a.date).month() === currentMonth.month()).sort(([,a]: [string, Purchase],[,b]: [string, Purchase]) => (dayjs(a.date).isAfter(dayjs(b.date)) ? 1 : -1)).map(([,a]: [string, Purchase]) => a) : [];
+  $: pur = $purchases ? Object.entries($purchases).filter(([,a]: [string, Purchase]) => dayjs(a.date).month() === currentMonth.month() && dayjs(a.date).year() === currentMonth.year()).sort(([,a]: [string, Purchase],[,b]: [string, Purchase]) => (dayjs(a.date).isAfter(dayjs(b.date)) ? 1 : -1)).map(([,a]: [string, Purchase]) => a) : [];
 </script>
 
 <style>
