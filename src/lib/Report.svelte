@@ -86,6 +86,9 @@
   i {
     padding: 5px;
   }
+  .green-text{
+    color: #008800 !important;
+  }
 </style>
 
 {#if selectedItem}
