@@ -10,12 +10,12 @@
 		{#each pages as page }
 			<a href="#/" on:click={() => select_page(page)} on:keydown={(e) => handleKeyDown(e, page)} class:active={selected==page}>
 				<i>{page.icon}</i>
-				<span>{page.name}</span>
+				<span class="capitalize">{page.name}</span>
 		  	</a>
 		{/each}
 		</div>
 	</div>
-	<div class="page padding left active">
+	<div class="page padding active">
 		<svelte:component this={selected.component}/>
     </div>
 </main>
@@ -28,17 +28,32 @@
 	import GoogleSync from "./lib/GoogleSync.svelte";
 	import Form from "./lib/Form.svelte";
 	import Report from "./lib/Report.svelte";
-	
+	import Budget from "./lib/Budget.svelte";
 
+	const urlParams = new URLSearchParams(window.location.search);
+    const isBeta = urlParams.has('beta');
+	const currentUrl = new URL(window.location.href);
+	
 	const pages = [
 		{ name: 'new', icon: 'add_circle', component: Form   },
 		{ name: 'report', icon: 'calendar_month', component: Report },
 	];
+	if(isBeta) {
+		pages.push({ name: 'budget', icon: 'analytics', component: Budget })
+	}
 
-	let selected = pages[0];
+	const pageName = urlParams.get('page');
+
+	let selected = pages.find(page => page.name === pageName) || pages[0];
 
 	function select_page(page) {
 		selected = page;
+
+		const url = new URL(window.location.href);
+		const params = new URLSearchParams(url.search);
+		params.set('page', selected.name);
+		// Update the URL without reloading the page
+		window.history.pushState({}, '', `${url.pathname}?${params}`);
 	}
 
 	function handleKeyDown(e, page) {
@@ -55,4 +70,7 @@
 </svelte:head>
 
 <style>
+	.capitalize{
+		text-transform: capitalize;
+	}
 </style>
