@@ -27,7 +27,7 @@
             const [ID, DateStr, Category, Amount, Currency, Note, Image] = row;
             result[ID] = {
                 id: ID,
-                date: dayjs(DateStr).toDate(),
+                date: DateStr,
                 category: Category,
                 amount: parseFloat(Amount.replace(/,/g, "")),
                 currency: Currency,
