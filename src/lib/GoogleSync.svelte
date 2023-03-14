@@ -123,7 +123,7 @@
         return null;
     }
 
-    async function uploadImage(dataUrl, access_token) {
+    async function uploadImage(item, access_token) {
         const headers = new Headers();
         headers.append("Authorization", `Bearer ${access_token}`);
         headers.append(
@@ -132,7 +132,7 @@
         );
         const image = await fetch(dataUrl).then((res) => res.blob());
         const fileMetadata = {
-            name: "recipi.jpg",
+            name: `${item.id}.jpg`,
             parents: ["1nPSN4U6jaCu386SHyZtO-f1nOrtV1Byp"],
         };
         //const blob = `--foo_bar_baz\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${json}\r\n--foo_bar_baz\r\nContent-Type: ${getContentTypeFromDataURL(dataUrl)}\r\n\r\n${image}\r\n--foo_bar_baz--\r\n`
@@ -186,7 +186,7 @@
                     ];
                     if (item.image && item.image != "") {
                         let image_url = await uploadImage(
-                            item.image,
+                            item,
                             access_token
                         );
                         row.push(image_url);
