@@ -130,12 +130,11 @@
             "Content-Type",
             "multipart/related; boundary=foo_bar_baz"
         );
-        const image = await fetch(dataUrl).then((res) => res.blob());
+        const image = await fetch(item.url).then((res) => res.blob());
         const fileMetadata = {
             name: `${item.id}.jpg`,
             parents: ["1nPSN4U6jaCu386SHyZtO-f1nOrtV1Byp"],
         };
-        //const blob = `--foo_bar_baz\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${json}\r\n--foo_bar_baz\r\nContent-Type: ${getContentTypeFromDataURL(dataUrl)}\r\n\r\n${image}\r\n--foo_bar_baz--\r\n`
 
         const blob = new Blob(
             [
@@ -147,7 +146,7 @@
                 "\r\n",
                 "--foo_bar_baz",
                 "\r\n",
-                `Content-Type: ${getContentTypeFromDataURL(dataUrl)}`,
+                `Content-Type: ${getContentTypeFromDataURL(item.url)}`,
                 "\r\n\r\n",
                 new Blob([image], { type: image.type }),
                 "\r\n",
