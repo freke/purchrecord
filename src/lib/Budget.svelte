@@ -2,24 +2,17 @@
   import Total from "./BudgetCards/Total.svelte";
   import BudgetVsReal from "./BudgetCards/BudgetVsReal.svelte";
   import { budget } from "../stores/budget";
-  import { purchases } from "../stores/purchases";
+  import { purchases, type Purchase } from "../stores/purchases";
   import { convertToJPY } from "../stores/rates";
   import dayjs from "dayjs";
 
   export let currentYear = dayjs().year();
 
-  const current_budget = $budget.find((b) => b.year === currentYear);
-  const budget_categories = current_budget
-    ? current_budget.categories.map((c) => c.name)
-    : [];
-  
-  const uncategorized =  purchases_categories();
-
-  function purchases_categories() {
+  function purchases_categories(purchases) {
     const purchases_categories = new Set(
-      Object.entries($purchases)
-        .filter(([, p]) => dayjs(p.date).year() == currentYear)
-        .map(([, p]) => p.category)
+      Object.entries(purchases)
+        .filter(([, p]: [string, Purchase]) => dayjs(p.date).year() == currentYear)
+        .map(([, p]: [string, Purchase]) => p.category)
     );
     const filteredArray = budget_categories.filter((value) =>
       [...purchases_categories].includes(value)
@@ -34,9 +27,16 @@
     }));
   }
 
-  function total_uncategorized() {
+  function total_uncategorized(uncategorized) {
     return uncategorized.reduce((a, u) => a + u.sum, 0)
   }
+
+  $: current_budget = $budget.find((b) => b.year === currentYear);
+  $: budget_categories = current_budget
+    ? current_budget.categories.map((c) => c.name)
+    : [];
+  $: uncategorized =  purchases_categories($purchases);
+  $: uncategorized_sum = total_uncategorized(uncategorized);
 </script>
 
 <div class="grid">
@@ -49,7 +49,7 @@
     </div>
   {/each}
   <div class="s12">
-    <h4>Uncategorized: {total_uncategorized().toFixed(2)}¥ total</h4>
+    <h4>Uncategorized: {uncategorized_sum.toFixed(2)}¥ total</h4>
     <div class="grid">
       {#each uncategorized as category}
         <div class="s4">
