@@ -95,8 +95,8 @@
 <article>
   <form>
     <div class="field label border">
-      <DateInput bind:date={formData.date} />
       <label for="date">Date</label>
+      <DateInput id="date" bind:date={formData.date} />
     </div>
     <div class="field label border">
       <input id="amount" type="number" bind:value={formData.amount}>
@@ -135,12 +135,13 @@
         <i>description</i>
       {/if}
       <input id="photo" type="text">
+      <label for="photo">File</label>
       {#if use_camera && Device.isMobile}
         <input id="photo_file" type="file" accept="image/*"  capture="environment" on:change={handleImageCapture} bind:value={formData.image} />
       {:else}
         <input id="photo_file" type="file" accept="image/*" on:change={handleImageCapture} bind:value={formData.image} />
       {/if}
-      <label for="photo">File</label>
+      <label for="photo_file">File</label>
     </div>
     <div class="row right-align">
       <button class="border" on:click={resetFrom}>Cancel</button>
