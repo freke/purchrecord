@@ -87,10 +87,7 @@
 
                         const budget = acc.find((b) => b.year === year);
                         if (budget) {
-                            budget.categories[0].row = [
-                                ...budget.categories[0].row,
-                                ...row,
-                            ];
+                            budget.categories.push({ name, row })
                         } else {
                             acc.push({
                                 year,

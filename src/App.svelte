@@ -37,9 +37,10 @@
 	const pages = [
 		{ name: 'new', icon: 'add_circle', component: Form   },
 		{ name: 'report', icon: 'calendar_month', component: Report },
+		{ name: 'budget', icon: 'analytics', component: Budget },
 	];
 	if(isBeta) {
-		pages.push({ name: 'budget', icon: 'analytics', component: Budget })
+		//pages.push()
 	}
 
 	const pageName = urlParams.get('page');

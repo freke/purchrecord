@@ -1,130 +1,61 @@
 <script lang="ts">
-  import { chart } from "svelte-apexcharts";
-  import { purchases } from "../stores/purchases";
-  import type { Purchase } from "../stores/purchases";
+  import Total from "./BudgetCards/Total.svelte";
+  import BudgetVsReal from "./BudgetCards/BudgetVsReal.svelte";
   import { budget } from "../stores/budget";
-  import type { Budget } from "../stores/budget";
+  import { purchases } from "../stores/purchases";
   import { convertToJPY } from "../stores/rates";
   import dayjs from "dayjs";
-  import localeData from "dayjs/plugin/localeData";
-  dayjs.extend(localeData);
 
   export let currentYear = dayjs().year();
 
-  const months = dayjs.monthsShort();
-
-  function groupedByMonth(purchases) {
-    return Object.entries(purchases).reduce(
-      (acc, [, purchase]: [string, Purchase]) => {
-        const monthYear = dayjs(purchase.date).format("YYYY-MM");
-        if (!acc[monthYear]) {
-          acc[monthYear] = [];
-        }
-        acc[monthYear].push(purchase);
-        return acc;
-      },
-      {}
-    );
-  }
-
-  function totalsByMonth(purchases) { 
-    return Object.entries(groupedByMonth(purchases)).map(
-    ([monthYear, purchases]) => {
-      const [year, month] = monthYear.split("-");
-      const total = Object.entries(purchases).reduce(
-        (sum, [, purchase]) =>
-          sum + convertToJPY(purchase.amount, purchase.currency),
-        0
-      );
-      return {
-        year: parseInt(year),
-        month: parseInt(month),
-        total,
-      };
-    }
-  );
-  }
-
+  const current_budget = $budget.find((b) => b.year === currentYear);
+  const budget_categories = current_budget
+    ? current_budget.categories.map((c) => c.name)
+    : [];
   
+  const uncategorized =  purchases_categories();
 
-  function sumArray(budget) {
-    let sumArray = new Array(12).fill(0);
-    const currentBudget = budget.find((b) => b.year === currentYear);
-    if (currentBudget) {
-      currentBudget.categories.forEach((budget) => {
-        budget.row.forEach((item) => {
-          sumArray[item.month] += item.value || 0;
-        });
-      });
-    }
-    return sumArray;
+  function purchases_categories() {
+    const purchases_categories = new Set(
+      Object.entries($purchases)
+        .filter(([, p]) => dayjs(p.date).year() == currentYear)
+        .map(([, p]) => p.category)
+    );
+    const filteredArray = budget_categories.filter((value) =>
+      [...purchases_categories].includes(value)
+    );
+    filteredArray.forEach((c) => purchases_categories.delete(c));
+    return [...purchases_categories].map((c) => ({
+      category: c,
+      sum: Object.entries($purchases)
+        .filter(([, p]) => p.category == c)
+        .map(([, p]) => convertToJPY(p.amount, p.currency))
+        .reduce((a, v) => a + v, 0),
+    }));
   }
 
-  function monthTotals(purchases) {
-    return Array.from({ length: 12 }, (_, i) => {
-      const total = totalsByMonth(purchases).find(
-        (t) => t.month === i + 1 && t.year == currentYear
-      );
-      return total ? total.total.toFixed(2) : "0";
-    });
+  function total_uncategorized() {
+    return uncategorized.reduce((a, u) => a + u.sum, 0)
   }
-
-  $: options = {
-    series: [
-      {
-        name: "Expenses",
-        data: $purchases ? monthTotals($purchases) : [],
-      },
-      {
-        name: "Budget",
-        data: $budget ? sumArray($budget) : [],
-      },
-    ],
-    chart: {
-      type: "bar",
-      height: 350,
-    },
-    plotOptions: {
-      bar: {
-        horizontal: false,
-        columnWidth: "55%",
-        endingShape: "rounded",
-      },
-    },
-    dataLabels: {
-      enabled: false,
-    },
-    stroke: {
-      show: true,
-      width: 2,
-      colors: ["transparent"],
-    },
-    xaxis: {
-      categories: months,
-    },
-    yaxis: {
-      title: {
-        text: "¥",
-      },
-    },
-    fill: {
-      opacity: 1,
-    },
-    tooltip: {
-      y: {
-        formatter: function (val) {
-          return "¥ " + val.toFixed(2);
-        },
-      },
-    },
-  };
 </script>
 
-<article class="no-padding round">
-  <div class="responsive small top-round" use:chart={options}>
-    <div class="padding">
-      <h5>Total {currentYear}</h5>
-      <p>Buget vs Expenses</p>
+<div class="grid">
+  <div class="s12">
+    <Total />
+  </div>
+  {#each budget_categories as category}
+    <div class="s6 l4">
+      <BudgetVsReal {category} />
+    </div>
+  {/each}
+  <div class="s12">
+    <h4>Uncategorized: {total_uncategorized().toFixed(2)}¥ total</h4>
+    <div class="grid">
+      {#each uncategorized as category}
+        <div class="s4">
+          {category.category}: {category.sum.toFixed(2)}¥
+        </div>
+      {/each}
     </div>
   </div>
-</article>
+</div>
