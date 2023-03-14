@@ -2,7 +2,7 @@ import { writable } from 'svelte/store';
 
 export interface Purchase {
     id: string;
-    date: Date;
+    date: string;
     category: string;
     currency: string;
     amount: number;
