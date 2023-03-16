@@ -82,7 +82,7 @@
                     (acc: Budget[], [name, ...values]) => {
                         const row = values.slice(0, 12).map((value, index) => ({
                             month: index,
-                            value: parseFloat(value.replace(/,/g, "")),
+                            value: typeof value === 'string' ? parseFloat(value.replace(/,/g, "")) : value,
                         }));
 
                         const budget = acc.find((b) => b.year === year);
