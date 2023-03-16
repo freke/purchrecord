@@ -29,7 +29,7 @@
                 id: ID,
                 date: DateStr,
                 category: Category,
-                amount: parseFloat(Amount.replace(/,/g, "")),
+                amount: typeof Amount === 'string' ? parseFloat(Amount.replace(/,/g, "")) : Amount,
                 currency: Currency,
                 note: Note || "",
                 sync: true,
