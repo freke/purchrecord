@@ -135,6 +135,30 @@
     "@jridgewell/resolve-uri" "3.1.0"
     "@jridgewell/sourcemap-codec" "1.4.14"
 
+"@maxim_mazurok/gapi.client.discovery-v1@latest":
+  version "0.0.20200806"
+  resolved "https://registry.yarnpkg.com/@maxim_mazurok/gapi.client.discovery-v1/-/gapi.client.discovery-v1-0.0.20200806.tgz#c257738ef5bbf9fefa5b10b0decd444a5f3328b4"
+  integrity sha512-0pZtrElj8bc0YROIo7nH8VVvks/iww/L68l7r74oC9+ksSVO3Lum1zUR8dXTvJ7TqLGaNYiiNaUZianK6doh/w==
+  dependencies:
+    "@types/gapi.client" "*"
+    "@types/gapi.client.discovery" "*"
+
+"@maxim_mazurok/gapi.client.drive-v3@latest":
+  version "0.0.20230402"
+  resolved "https://registry.yarnpkg.com/@maxim_mazurok/gapi.client.drive-v3/-/gapi.client.drive-v3-0.0.20230402.tgz#e6048afc5eb17752e115084ff66a4d9df66ca787"
+  integrity sha512-aE75NUWTTl8zQHGwHTDjE1wGnniGcLz8g6dLL+4VlsW529VKzUkYPHNWl/GCUBIJ8lnKseYUhmL8YG5S2VJXJw==
+  dependencies:
+    "@types/gapi.client" "*"
+    "@types/gapi.client.discovery" "*"
+
+"@maxim_mazurok/gapi.client.sheets-v4@latest":
+  version "0.0.20230407"
+  resolved "https://registry.yarnpkg.com/@maxim_mazurok/gapi.client.sheets-v4/-/gapi.client.sheets-v4-0.0.20230407.tgz#f46a30a9cc88d9745c38acabebc8361db885ee79"
+  integrity sha512-EFzwieCUPTFbwipFFJYSYUDai2CB2B9Y7603wUvNrTMyE62xjH6UH59U+x8u3H1+7jUmt6+r63YJfVJO9Y2b/A==
+  dependencies:
+    "@types/gapi.client" "*"
+    "@types/gapi.client.discovery" "*"
+
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
   resolved "https://registry.yarnpkg.com/@nodelib/fs.scandir/-/fs.scandir-2.1.5.tgz#7619c2eb21b25483f6d167548b4cfd5a7488c3d5"
@@ -172,6 +196,32 @@
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/@tsconfig/svelte/-/svelte-3.0.0.tgz#b06e059209f04c414de0069f2f0e2796d979fc6f"
   integrity sha512-pYrtLtOwku/7r1i9AMONsJMVYAtk3hzOfiGNekhtq5tYBGA7unMve8RvUclKLMT3PrihvJqUmzsRGh0RP84hKg==
+
+"@types/gapi.client.discovery@*":
+  version "1.0.9"
+  resolved "https://registry.yarnpkg.com/@types/gapi.client.discovery/-/gapi.client.discovery-1.0.9.tgz#e2472989baa01f2e32a2d5a80981da8513f875ae"
+  integrity sha512-51fXpt7DM7+zPG5pgwnNr3KaRXmyszznu66VPpV7+FAu0LGtpTohvdfvkRCnCn2Z6EgNTq/baFAtCa/9ylHOug==
+  dependencies:
+    "@maxim_mazurok/gapi.client.discovery-v1" latest
+
+"@types/gapi.client.drive-v3@^0.0.1":
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/@types/gapi.client.drive-v3/-/gapi.client.drive-v3-0.0.1.tgz#e67ea94c79c68e690bdfc8afb83a1b0d4b9b2643"
+  integrity sha512-tIvUpcfeTZI5yRYWAPo/kx6w8kAfW8HeOAJPmXlhVpSBUO8R4hUVZiZhuc6PxNtQkI6LKXeyOuJv70Nd3Nb/8g==
+  dependencies:
+    "@maxim_mazurok/gapi.client.drive-v3" latest
+
+"@types/gapi.client.sheets-v4@^0.0.1":
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/@types/gapi.client.sheets-v4/-/gapi.client.sheets-v4-0.0.1.tgz#85f234e6e314f7515fe7da6ae0827871704d1bb4"
+  integrity sha512-1Ts3l9jUIvc6VW0MmOa8c3biq8RtESx1yMTrtOY6dw0bvdbmuwZyQMVQWMOeUw1mTlM7WLQi7cKmp/TGOCJtIg==
+  dependencies:
+    "@maxim_mazurok/gapi.client.sheets-v4" latest
+
+"@types/gapi.client@*", "@types/gapi.client@^1.0.5":
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/@types/gapi.client/-/gapi.client-1.0.5.tgz#a6eb97e664fe51656c5b52258bd0afef28c76308"
+  integrity sha512-OTpbBMuzfC4lkvaomxqskI/iWRGW3zOZbDXZLNSyiuswTiSSGgILRLkg0POuZ4EgzEdaYaTlXpnXiCp07ri/Yw==
 
 "@types/node@*":
   version "18.14.1"

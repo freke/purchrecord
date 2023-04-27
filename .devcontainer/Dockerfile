@@ -1,13 +1,2 @@
-FROM node:18
-
-# Install basic development tools
-RUN apt update && apt install -y less man-db sudo
-RUN npm install -g svelte
-
-# Ensure default `node` user has access to `sudo`
-ARG USERNAME=node
-RUN echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
-    && chmod 0440 /etc/sudoers.d/$USERNAME
-
-# Set `DEVCONTAINER` environment variable to help with orientation
-ENV DEVCONTAINER=true
+FROM mcr.microsoft.com/devcontainers/base:alpine-3.17
+RUN apk update; apk add yarn
