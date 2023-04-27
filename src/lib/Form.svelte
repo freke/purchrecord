@@ -6,12 +6,13 @@
     import type {Purchase} from '../stores/purchases';
     import DateInput from './DateInput.svelte';
     import Device from 'svelte-device-info'
+    import dayjs from "dayjs";
 
     export let submitFunction = () => {};
     export let cancelFunction = () => {};
     export let formData: Purchase  = {
       id: null,
-      date: new Date(),
+      date: dayjs().toISOString(),
       category: null,
       currency: 'JPY',
       amount: null,
@@ -25,7 +26,7 @@
 
     $: formData = formData ? formData : {
         id: null,
-        date: new Date(),
+        date: dayjs().toISOString(),
         category: null,
         currency: 'JPY',
         amount: null,
@@ -73,6 +74,7 @@
     function submitForm(event) {
       event.preventDefault();
       formData.id = formData.id ? formData.id : uuidv4();
+      formData.category = formData.category.trim();
       if($purchases == null){
         $purchases = {[formData.id]: formData};
       }else{
