@@ -94,7 +94,7 @@
       Object.entries(purchases)
         .filter(([, p]: [string, Purchase]) => dayjs(p.date).year() == year && (month == null || dayjs(p.date).month() == month))
         .map(([, p]: [string, Purchase]) => p.category)
-    )).map((c) => {return {name: c, selected: true}});
+    )).map((c) => {return {name: c, selected: true}}).sort((a, b) => a.name.localeCompare(b.name));
   }
 
   function filteredTotal(categories) {
