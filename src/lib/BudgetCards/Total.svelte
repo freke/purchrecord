@@ -3,7 +3,7 @@
     import { purchases } from "../../stores/purchases";
     import type { Purchase } from "../../stores/purchases";
     import { budget } from "../../stores/budget";
-    import type { Budget } from "../../stores/budget";
+    import {nFormatter} from "../../functions/utils";
     import { convertToJPY } from "../../stores/rates";
     import dayjs from "dayjs";
     import localeData from "dayjs/plugin/localeData";
@@ -104,6 +104,11 @@
             title: {
                 text: "¥",
             },
+            labels: {
+                formatter: function (value) {
+                    return nFormatter(value,2);
+                }
+            },
         },
         fill: {
             opacity: 1,
@@ -111,7 +116,7 @@
         tooltip: {
             y: {
                 formatter: function (val) {
-                    return "¥ " + val.toFixed(2);
+                    return nFormatter(val, 2) + "¥";
                 },
             },
         },

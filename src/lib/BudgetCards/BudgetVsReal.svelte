@@ -2,15 +2,27 @@
     import { chart } from "svelte-apexcharts";
     import { purchases, type Purchase } from "../../stores/purchases";
     import { budget } from "../../stores/budget";
+    import type { Budget } from "../../stores/budget";
     import { convertToJPY } from "../../stores/rates";
+    import {nFormatter} from "../../functions/utils";
     import dayjs from "dayjs";
 
     export let category = "";
     export let currentYear = dayjs().year();
+    export let selectedMonth: number | null = null;
 
-    function monthTotals(purchases, category) {
+    function monthTotals(purchases, category, month) {
+        if( selectedMonth == null){
+            return Object.entries(purchases)
+                .filter(([, p]: [string, Purchase]) => p.category === category)
+                .reduce(
+                    (acc, [, p]: [string, Purchase]) =>
+                        acc + convertToJPY(p.amount, p.currency),
+                    0
+                ).toFixed(2);
+        }
         return Object.entries(purchases)
-            .filter(([, p]: [string, Purchase]) => p.category === category)
+            .filter(([, p]: [string, Purchase]) => p.category === category && dayjs(p.date).month() === month)
             .reduce(
                 (acc, [, p]: [string, Purchase]) =>
                     acc + convertToJPY(p.amount, p.currency),
@@ -18,25 +30,28 @@
             ).toFixed(2);
     }
 
-    function sumArray(budget, category) {
+    function sumArray(budget: Budget[], category, month) {
         const currentBudget = budget.find((b) => b.year === currentYear);
-        if (currentBudget) {
-            return currentBudget.categories
-                .find((c) => c.name === category)
-                .row.reduce((a, r) => r.value + a, 0).toFixed(2);
+        if (!currentBudget) {
+            return 0;
         }
-        return 0;
+        if(selectedMonth == null) {
+            return currentBudget.categories
+                    .find((c) => c.name === category)
+                    .row.reduce((a, r) => r.value + a, 0).toFixed(2);
+        }
+        return currentBudget.categories.find((c) => c.name === category).row.find(r => r.month === month).value.toFixed(2);
     }
 
     $: options = {
         series: [
             {
                 name: "Expenses",
-                data: $purchases ? [monthTotals($purchases, category)] : [],
+                data: $purchases ? [monthTotals($purchases, category, selectedMonth)] : [],
             },
             {
                 name: "Budget",
-                data: $budget ? [sumArray($budget, category)] : [],
+                data: $budget ? [sumArray($budget, category, selectedMonth)] : [],
             },
         ],
         chart: {
@@ -65,6 +80,11 @@
             title: {
                 text: "¥",
             },
+            labels: {
+                formatter: function (value) {
+                    return nFormatter(value,2);
+                }
+            },
         },
         fill: {
             opacity: 1,
@@ -72,7 +92,7 @@
         tooltip: {
             y: {
                 formatter: function (val) {
-                    return "¥ " + val.toFixed(2);
+                    return nFormatter(val,2)+"¥";
                 },
             },
         },

@@ -97,7 +97,7 @@
 <article>
   <form>
     <div class="field label border">
-      <label for="date">Date</label>
+      <label for="date" class="active">Date</label>
       <DateInput id="date" bind:date={formData.date} />
     </div>
     <div class="field label border">

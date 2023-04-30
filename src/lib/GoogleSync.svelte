@@ -6,6 +6,7 @@
     import { deleted } from "../stores/deleted";
     import { budget } from "../stores/budget";
     import type { Budget } from "../stores/budget";
+    import { progress } from "../stores/progress";
 
     const clientId =
         "732312482119-fs9q45r0j0pmfmjm1dren2hr9dodk8fn.apps.googleusercontent.com";
@@ -19,9 +20,6 @@
 
     let gisLoadOkay = null;
     let gisLoadFail = null;
-
-    let showEventsBtn = false;
-    let showRevokeBtn = false;
 
     const gapiLoadPromise = new Promise((resolve, reject) => {
         gapiLoadOkay = resolve;
@@ -74,9 +72,6 @@
                 reject(err);
             }
         });
-
-        showEventsBtn = true;
-        showRevokeBtn = true;
     });
 
     async function newPurchaseSheet(spreadsheet_id, name) {
@@ -169,16 +164,6 @@
             });
         } else {
             throw new Error(err);
-        }
-    }
-
-    function revokeToken() {
-        let cred = gapi.client.getToken();
-        if (cred !== null) {
-            google.accounts.oauth2.revoke(cred.access_token, () => {
-                console.log("Revoked: " + cred.access_token);
-            });
-            gapi.client.setToken("");
         }
     }
 
@@ -511,6 +496,7 @@
     }
 
     async function sync() {
+        $progress = true;
         const year = dayjs().year();
         const toDelete = await getDelPurchases();
         if (toDelete) {
@@ -533,6 +519,7 @@
         $purchases = merge(await getPurchases(), $purchases || {});
         $deleted = [];
         $budget = (await getBudget(dayjs().year())) as Budget[];
+        $progress = false;
     }
 
     $: all_synced =

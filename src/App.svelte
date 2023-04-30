@@ -3,6 +3,9 @@
 		<h5 class="max center-align">PurchRecord</h5>
 		<GoogleSync />
 	</nav>
+	{#if $progress}
+	<BarLoader />
+	{/if}
 </header>
 <main class="responsive">	
 	<div>
@@ -25,10 +28,12 @@
 	import "beercss";
 	import "material-dynamic-colors";
 
+	import { progress } from "./stores/progress";
 	import GoogleSync from "./lib/GoogleSync.svelte";
 	import Form from "./lib/Form.svelte";
 	import Report from "./lib/Report.svelte";
 	import Budget from "./lib/Budget.svelte";
+	import BarLoader from "./lib/BarLoader.svelte";
 
 	const urlParams = new URLSearchParams(window.location.search);
     const isBeta = urlParams.has('beta');
