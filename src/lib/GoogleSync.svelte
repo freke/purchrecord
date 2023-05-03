@@ -431,7 +431,7 @@
         );
         return deleteRows(
             spreadsheetId,
-            sheet.id,
+            sheet.sheetId,
             rows.map((del) => del.row)
         );
     }
