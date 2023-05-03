@@ -346,8 +346,8 @@
 
     async function getDelPurchases() {
         try {
-            const { values } = await getRows(spreadsheetId, `Deleted!A1:A`);
-            return values;
+            const reply = await getRows(spreadsheetId, `Deleted!A1:A`);
+            return reply.result.values;
         } catch (error) {
             console.error(error);
         }
