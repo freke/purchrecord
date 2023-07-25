@@ -16,6 +16,7 @@
       category: null,
       currency: 'JPY',
       amount: null,
+      paid: null,
       note: null,
       image: null,
       sync: false,
@@ -30,6 +31,7 @@
         category: null,
         currency: 'JPY',
         amount: null,
+        paid: null,
         note: null,
         image: null,
         sync: false,
@@ -45,6 +47,7 @@
         category: null,
         currency: 'JPY',
         amount: null,
+        paid: null,
         note: null,
         image: null,
         sync: false,
@@ -116,6 +119,10 @@
       </select>
       <label for="currency" class="active">Currency</label>
       <i>arrow_drop_down</i>
+    </div>
+    <div class="field text label border">
+      <input id="paid" bind:value={formData.paid}/>
+      <label for="paid">Paid by</label>
     </div>
     <div class="field textarea label border">
       <textarea id="note" bind:value={formData.note}></textarea>

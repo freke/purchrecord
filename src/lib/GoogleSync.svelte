@@ -13,7 +13,7 @@
     const spreadsheetId = "1P0gzwKMG_eBiPfgdaI3Ah2ABkAjJF1-eOpxms3nHy7A";
     const purchasesSheetName = "Purchases";
     const purchasesCurrentYear = `${purchasesSheetName}${dayjs().year()}`;
-    const purchasesSheetRange = "A2:G";
+    const purchasesSheetRange = "A2:H";
 
     let gapiLoadOkay = null;
     let gapiLoadFail = null;
@@ -86,6 +86,7 @@
             "Currency",
             "Note",
             "Image",
+            "Paied by",
         ];
         const values = titles.map((title) => {
             return { userEnteredValue: { stringValue: title } };
@@ -171,7 +172,7 @@
         let result = {};
         let row_num = row;
         for (const row of remote) {
-            const [ID, DateStr, Category, Amount, Currency, Note, Image] = row;
+            const [ID, DateStr, Category, Amount, Currency, Note, Image, Paid] = row;
             result[ID] = {
                 id: ID,
                 date: DateStr,
@@ -185,6 +186,7 @@
                 sync: true,
                 row: row_num,
                 image: Image,
+                paid: Paid,
             };
             row_num = row_num + 1;
         }
@@ -324,7 +326,7 @@
         const result = {} as { [id: string]: Purchase };
         let row_num = row;
         for (const row of remote) {
-            const [ID, DateStr, Category, Amount, Currency, Note, Image] = row;
+            const [ID, DateStr, Category, Amount, Currency, Note, Image, Paid] = row;
             result[ID] = {
                 id: ID,
                 date: DateStr,
@@ -338,6 +340,7 @@
                 sync: true,
                 row: row_num,
                 image: Image,
+                paid: Paid,
             };
             row_num = row_num + 1;
         }
@@ -387,7 +390,10 @@
                         );
                         let image_url = `https://drive.google.com/uc?export=view&id=${image_upload_response.result.id}`;
                         row.push(image_url);
+                    }else{
+                        row.push(null);
                     }
+                    row.push(item.paid)
                     return row;
                 })
             );

@@ -195,7 +195,12 @@
             >{cardData.amount.toFixed(2)} {cardData.currency}</span
           > <span>{cardData.category || ""}</span>
         </div>
-        <div class="small-text">{dayjs(cardData.date).format("L")}</div>
+        <div class="inline">
+          <div class="small-text">{dayjs(cardData.date).format("L")}</div>
+          {#if cardData.paid}
+            <div class="small-text bold" style="margin-left: 10px">Paid:</div><div class="small-text">{cardData.paid}</div>
+          {/if}
+        </div>
         <p class="small-text">{cardData.note}</p>
       </div>
       {#if cardData.image}
@@ -236,6 +241,10 @@
     color: #008800 !important;
   }
   .checkbox {
-    margin: 0
+    margin: 0;
+  }
+  .inline {
+    display: inline-flex;
+    gap: 2px;
   }
 </style>

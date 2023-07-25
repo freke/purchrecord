@@ -8,6 +8,7 @@ export interface Purchase {
     amount: number;
     note: string;
     image: string;
+    paid: string;
     sync: boolean;
     row: number;
 }
