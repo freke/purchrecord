@@ -95,7 +95,7 @@
 
     let currencies = ['JPY', 'SEK', 'GBP', 'DKK'];
 
-    let payedBy = [
+    let payedByOptions = [
         'Naoko Cash',
         'Naoko Amex',
         'Naoko VISA JAL',
@@ -104,7 +104,7 @@
         'David MC'
       ];
 
-    let categories = [
+    let categoryOptions = [
         'Food',
         'Health',
         'Travel',
@@ -136,8 +136,13 @@
       <label for="amount">Amount</label>
     </div>
     <div class="field label border">
-      <input id="category" type="text" bind:value={formData.category}>
+      <input id="category" type="text" bind:value={formData.category} list="CategoryOptions">
       <label for="category">Category</label>
+      <datalist id="CategoryOptions">
+        {#each categoryOptions as category}
+        <option value="{category}">{category}</option>
+        {/each}
+      </datalist>
     </div>
     <div class="field label suffix border">
       <select id="currency" bind:value={formData.currency}>
@@ -149,15 +154,12 @@
       <i>arrow_drop_down</i>
     </div>
     <div class="field text label border">
-      <input id="paid" bind:value={formData.paid} list="paidBy"/>
+      <input id="paid" bind:value={formData.paid} list="paidByOptions"/>
       <label for="paid">Paid by</label>
-      <datalist id="paidBy">
-        <option value="Naoko Cash">Naoko Cash</option>
-        <option value="Naoko Amex">Naoko Amex</option>
-        <option value="Naoko VISA JAL">Naoko VISA JAL</option>
-        <option value="Naoko VISA ANA">Naoko VISA ANA</option>
-        <option value="David Cash">David Cash</option>
-        <option value="David MC">David MC</option>
+      <datalist id="paidByOptions">
+        {#each payedByOptions as payedBy}
+        <option value="{payedBy}">{payedBy}</option>
+        {/each}
       </datalist>
     </div>
     <div class="field textarea label border">
