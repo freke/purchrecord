@@ -93,7 +93,35 @@
       resetFromData();
     }
 
-    let currencies = ['JPY', 'SEK'];
+    let currencies = ['JPY', 'SEK', 'GBP', 'DKK'];
+
+    let payedBy = [
+        'Naoko Cash',
+        'Naoko Amex',
+        'Naoko VISA JAL',
+        'Naoko VISA ANA',
+        'David Cash',
+        'David MC'
+      ];
+
+    let categories = [
+        'Food',
+        'Health',
+        'Travel',
+        'Transportation',
+        'Apartment',
+        'Dining out',
+        'Utility',
+        'Insurance',
+        'Misc',
+        'Leisure',
+        'Medical',
+        'Household',
+        'Entertainment',
+        'Naoko',
+        'Naoko Beauty',
+        'Naoko Misc'
+      ];
 
 </script>
 
@@ -121,8 +149,16 @@
       <i>arrow_drop_down</i>
     </div>
     <div class="field text label border">
-      <input id="paid" bind:value={formData.paid}/>
+      <input id="paid" bind:value={formData.paid} list="paidBy"/>
       <label for="paid">Paid by</label>
+      <datalist id="paidBy">
+        <option value="Naoko Cash">Naoko Cash</option>
+        <option value="Naoko Amex">Naoko Amex</option>
+        <option value="Naoko VISA JAL">Naoko VISA JAL</option>
+        <option value="Naoko VISA ANA">Naoko VISA ANA</option>
+        <option value="David Cash">David Cash</option>
+        <option value="David MC">David MC</option>
+      </datalist>
     </div>
     <div class="field textarea label border">
       <textarea id="note" bind:value={formData.note}></textarea>

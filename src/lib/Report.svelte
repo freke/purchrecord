@@ -13,17 +13,26 @@
   import Summary from "./Summary.svelte";
   dayjs.extend(localizedFormat);
 
+  async function update_rates() {
+      const response = await fetch(
+        "https://v6.exchangerate-api.com/v6/2a8dab30a85314fff7fabb79/latest/JPY"
+      );
+      const data = await response.json();
+      $rate = { 
+        'JPY': { rate: 1/data.conversion_rates.JPY, date: new Date() },
+        'SEK': { rate: 1/data.conversion_rates.SEK, date: new Date() },
+        'DKK': { rate: 1/data.conversion_rates.DKK, date: new Date() },
+        'GBP': { rate: 1/data.conversion_rates.GBP, date: new Date() },
+      };
+  }
   onMount(async () => {
     if (
       !$rate ||
-      $rate.date == null ||
-      new Date().getTime() - $rate.date.getTime() > 86400000
+      !$rate['JPY'] ||
+      $rate['JPY'].date == null ||
+      dayjs().unix()  - dayjs($rate['JPY'].date).unix() > 86400
     ) {
-      const response = await fetch(
-        "https://v6.exchangerate-api.com/v6/2a8dab30a85314fff7fabb79/latest/SEK"
-      );
-      const data = await response.json();
-      $rate = { rate: data.conversion_rates.JPY, date: new Date() };
+      await update_rates()
     }
   });
 
