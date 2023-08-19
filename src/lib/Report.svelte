@@ -106,8 +106,23 @@
     )).map((c) => {return {name: c, selected: true}}).sort((a, b) => a.name.localeCompare(b.name));
   }
 
-  function filteredTotal(categories) {
-    return $purchases ? Object.entries($purchases).filter(([_, value]: [string, Purchase]) => dayjs(value.date).month() == currentMonth.month() && categories.find(c => c.name == value.category).selected ).reduce((t, [_, value]: [string, Purchase]) => t + convertToJPY(value.amount, value.currency), 0).toFixed(2) : "0.00";
+  function purchases_paied_by(purchases: {[id: string]: Purchase}, year, month) {
+    return Array.from(new Set(
+      Object.entries(purchases)
+        .filter(([, p]: [string, Purchase]) => dayjs(p.date).year() == year && (month == null || dayjs(p.date).month() == month))
+        .map(([, p]: [string, Purchase]) => p.paid || "unkown")
+    )).map((c) => {return {name: c, selected: true}}).sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  function filteredTotal(categories, payer) {
+    return $purchases ? Object.entries($purchases)
+      .filter(([_, value]: [string, Purchase]) => dayjs(value.date).month() == currentMonth.month() && categories.find(c => c.name == value.category).selected )
+      .filter(([_, value]: [string, Purchase]) => dayjs(value.date).month() == currentMonth.month() && payer.find(p => {
+                  var paid = value.paid || "unkown"
+                  return p.name == paid
+                }).selected)
+      .reduce((t, [_, value]: [string, Purchase]) => t + convertToJPY(value.amount, value.currency), 0)
+      .toFixed(2) : "0.00";
   }
 
   $: pur = $purchases
@@ -123,7 +138,8 @@
         .map(([, a]: [string, Purchase]) => a)
     : [];
   $: categories =  purchases_categories($purchases, currentMonth.year(), currentMonth.month());
-  $: filtered_total = filteredTotal(categories);
+  $: payer = purchases_paied_by($purchases, currentMonth.year(), currentMonth.month());
+  $: filtered_total = filteredTotal(categories, payer);
 </script>
 
 {#if selectedItem}
@@ -176,12 +192,21 @@
 </article>
 
 <article>
-  <h6>Filter</h6>
+  <h6>Category Filter</h6>
   <div class="grid">
     {#each categories as category}
       <label class="s6 l2 checkbox">
         <input type="checkbox" checked={category.selected} on:change={() => category.selected = !category.selected}>
         <span>{category.name}</span>
+      </label>
+    {/each}
+  </div>
+  <h6>Payer Filter</h6>
+  <div class="grid">
+    {#each payer as payed_by}
+      <label class="s6 l2 checkbox">
+        <input type="checkbox" checked={payed_by.selected} on:change={() => payed_by.selected = !payed_by.selected}>
+        <span>{payed_by.name}</span>
       </label>
     {/each}
   </div>
@@ -194,51 +219,53 @@
 <div class="space" />
 {#each pur as cardData}
   {#if categories.find((c) => c.name == cardData.category).selected}
-    <div class="row">
-      <i class:red-text={!cardData.sync} class:green-text={cardData.sync}
-        >{cardData.sync ? "check_circle" : "error"}</i
-      >
-      <div class="max">
-        <div>
-          <span class="large bold"
-            >{cardData.amount.toFixed(2)} {cardData.currency}</span
-          > <span>{cardData.category || ""}</span>
+    {#if payer.find((c) => c.name == (cardData.paid || "unkown")).selected}
+      <div class="row">
+        <i class:red-text={!cardData.sync} class:green-text={cardData.sync}
+          >{cardData.sync ? "check_circle" : "error"}</i
+        >
+        <div class="max">
+          <div>
+            <span class="large bold"
+              >{cardData.amount.toFixed(2)} {cardData.currency}</span
+            > <span>{cardData.category || ""}</span>
+          </div>
+          <div class="inline">
+            <div class="small-text">{dayjs(cardData.date).format("L")}</div>
+            {#if cardData.paid}
+              <div class="small-text bold" style="margin-left: 10px">Paid:</div><div class="small-text">{cardData.paid}</div>
+            {/if}
+          </div>
+          <p class="small-text">{cardData.note}</p>
         </div>
-        <div class="inline">
-          <div class="small-text">{dayjs(cardData.date).format("L")}</div>
-          {#if cardData.paid}
-            <div class="small-text bold" style="margin-left: 10px">Paid:</div><div class="small-text">{cardData.paid}</div>
+        {#if cardData.image}
+          {#if cardData.sync}
+            <a href={cardData.image}>
+              <i>satellite</i>
+            </a>
+          {:else}
+            <button
+              class="transparent circle"
+              on:click={() => show_image(cardData)}
+            >
+              <i>image</i>
+            </button>
           {/if}
-        </div>
-        <p class="small-text">{cardData.note}</p>
-      </div>
-      {#if cardData.image}
-        {#if cardData.sync}
-          <a href={cardData.image}>
-            <i>satellite</i>
-          </a>
-        {:else}
+        {/if}
+
+        {#if !cardData.sync}
           <button
             class="transparent circle"
-            on:click={() => show_image(cardData)}
+            on:click={() => edit_purchase(cardData)}
           >
-            <i>image</i>
+            <i>edit</i>
           </button>
         {/if}
-      {/if}
-
-      {#if !cardData.sync}
-        <button
-          class="transparent circle"
-          on:click={() => edit_purchase(cardData)}
-        >
-          <i>edit</i>
+        <button class="transparent circle" on:click={() => delete_id(cardData)}>
+          <i>delete</i>
         </button>
-      {/if}
-      <button class="transparent circle" on:click={() => delete_id(cardData)}>
-        <i>delete</i>
-      </button>
-    </div>
+      </div>
+    {/if}
   {/if}
 {/each}
 
