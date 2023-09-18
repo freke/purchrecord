@@ -1,40 +1,15 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   import "beercss";
   import "material-dynamic-colors";
   import { purchases } from "../stores/purchases";
   import type { Purchase } from "../stores/purchases";
-  import { rate } from "../stores/rates";
   import { deleted } from "../stores/deleted";
   import Form from "./Form.svelte";
   import {convertToJPY} from '../stores/rates';
   import dayjs from "dayjs";
   import localizedFormat from "dayjs/plugin/localizedFormat";
-  import Summary from "./Summary.svelte";
+  import Summary from "./Components/Summary.svelte";
   dayjs.extend(localizedFormat);
-
-  async function update_rates() {
-      const response = await fetch(
-        "https://v6.exchangerate-api.com/v6/2a8dab30a85314fff7fabb79/latest/JPY"
-      );
-      const data = await response.json();
-      $rate = { 
-        'JPY': { rate: 1/data.conversion_rates.JPY, date: new Date() },
-        'SEK': { rate: 1/data.conversion_rates.SEK, date: new Date() },
-        'DKK': { rate: 1/data.conversion_rates.DKK, date: new Date() },
-        'GBP': { rate: 1/data.conversion_rates.GBP, date: new Date() },
-      };
-  }
-  onMount(async () => {
-    if (
-      !$rate ||
-      !$rate['JPY'] ||
-      $rate['JPY'].date == null ||
-      dayjs().unix()  - dayjs($rate['JPY'].date).unix() > 86400
-    ) {
-      await update_rates()
-    }
-  });
 
   let currentMonth = dayjs().startOf("month");
   let selectedItem;

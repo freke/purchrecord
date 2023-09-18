@@ -4,7 +4,7 @@
     import { v4 as uuidv4 } from 'uuid';
     import {purchases} from '../stores/purchases';
     import type {Purchase} from '../stores/purchases';
-    import DateInput from './DateInput.svelte';
+    import DateInput from './Components/DateInput.svelte';
     import Device from 'svelte-device-info'
     import dayjs from "dayjs";
 
@@ -43,7 +43,7 @@
     function resetFromData() {
       formData = {
         id: null,
-        date: new Date(),
+        date: dayjs().toISOString(),
         category: null,
         currency: 'JPY',
         amount: null,
@@ -101,7 +101,8 @@
         'Naoko VISA JAL',
         'Naoko VISA ANA',
         'David Cash',
-        'David MC'
+        'David MC',
+        'David Amex',
       ];
 
     let categoryOptions = [

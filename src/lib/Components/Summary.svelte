@@ -1,7 +1,7 @@
 <script lang="ts">
-    import {purchases} from '../stores/purchases';
-    import type {Purchase} from '../stores/purchases';
-    import {convertToJPY} from '../stores/rates';
+    import {purchases} from '../../stores/purchases';
+    import type {Purchase} from '../../stores/purchases';
+    import {convertToJPY} from '../../stores/rates';
     import dayjs from 'dayjs';
     import localizedFormat from 'dayjs/plugin/localizedFormat';
     dayjs.extend(localizedFormat);

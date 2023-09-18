@@ -13,7 +13,8 @@
 		{#each pages as page }
 			<a href="#/" on:click={() => select_page(page)} on:keydown={(e) => handleKeyDown(e, page)} class:active={selected==page}>
 				<i>{page.icon}</i>
-				<span class="capitalize">{page.name}</span>
+				<span class="l m capitalize">{page.name}</span>
+				<div class="tooltip bottom capitalize">{page.name}</div>
 		  	</a>
 		{/each}
 		</div>
@@ -33,7 +34,8 @@
 	import Form from "./lib/Form.svelte";
 	import Report from "./lib/Report.svelte";
 	import Budget from "./lib/Budget.svelte";
-	import BarLoader from "./lib/BarLoader.svelte";
+	import MonlyCalculation from "./lib/MonlyCalculation.svelte";
+	import BarLoader from "./lib/Components/BarLoader.svelte";
 
 	const urlParams = new URLSearchParams(window.location.search);
     const isBeta = urlParams.has('beta');
@@ -43,6 +45,7 @@
 		{ name: 'new', icon: 'add_circle', component: Form   },
 		{ name: 'report', icon: 'calendar_month', component: Report },
 		{ name: 'budget', icon: 'analytics', component: Budget },
+		{ name: 'monlthly', icon: 'functions', component: MonlyCalculation},
 	];
 	if(isBeta) {
 		//pages.push()
