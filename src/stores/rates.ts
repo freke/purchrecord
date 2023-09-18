@@ -3,7 +3,8 @@ import { writable, get } from 'svelte/store';
 
 const cache = JSON.parse(localStorage.getItem('rate'));
 
-let rate_obj = new Promise<{ [currency: string]: {rate: number, date: Date}}>(() => {});
+type Rate = { [currency: string]: {rate: number, date: Date}}
+let rate_obj = new Promise<Rate>(() => {});
 
 if(!cache||
     !cache['JPY'] ||
@@ -11,6 +12,8 @@ if(!cache||
     dayjs().unix()  - dayjs(cache['JPY'].date).unix() > 86400
 ){
     rate_obj = update_rates();
+} else {
+    rate_obj = new Promise<Rate>((resolve) => resolve(cache))
 }
 
 async function update_rates() {
@@ -28,10 +31,9 @@ async function update_rates() {
     return rate;
 }
 
-export function convertToJPY(amount:number, currency:string): number {
-    const currentValue = get(rate);
-    if(!currentValue) return 0;
-    return amount * currentValue[currency].rate;
+export function convertToJPY(rate: Rate, amount:number, currency:string): number {
+    if(!rate || !rate[currency]) return 0;
+    return amount * rate[currency].rate;
 }
 
 function createRateStore() {

@@ -4,7 +4,7 @@
     import type { Purchase } from "../../stores/purchases";
     import { budget } from "../../stores/budget";
     import {nFormatter} from "../../functions/utils";
-    import { convertToJPY } from "../../stores/rates";
+    import { rate, convertToJPY } from "../../stores/rates";
     import dayjs from "dayjs";
     import localeData from "dayjs/plugin/localeData";
     dayjs.extend(localeData);
@@ -27,13 +27,13 @@
         );
     }
 
-    function totalsByMonth(purchases) {
+    function totalsByMonth(r, purchases) {
         return Object.entries(groupedByMonth(purchases)).map(
             ([monthYear, purchases]) => {
                 const [year, month] = monthYear.split("-");
                 const total = Object.entries(purchases).reduce(
                     (sum, [, purchase]) =>
-                        sum + convertToJPY(purchase.amount, purchase.currency),
+                        sum + convertToJPY(r, purchase.amount, purchase.currency),
                     0
                 );
                 return {
@@ -66,7 +66,7 @@
             return [];
         }
         return Array.from({ length: 12 }, (_, i) => {
-            const total = totalsByMonth(purchases).find(
+            const total = totalsByMonth($rate, purchases).find(
                 (t) => t.month === i + 1 && t.year == currentYear
             );
             return total ? total.total : 0;

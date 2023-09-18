@@ -1,7 +1,7 @@
 <script lang="ts">
     import {purchases} from '../../stores/purchases';
     import type {Purchase} from '../../stores/purchases';
-    import {convertToJPY} from '../../stores/rates';
+    import {rate, convertToJPY} from '../../stores/rates';
     import dayjs from 'dayjs';
     import localizedFormat from 'dayjs/plugin/localizedFormat';
     dayjs.extend(localizedFormat);
@@ -9,19 +9,23 @@
     export let month = dayjs()
     export let pur = []
 
-    $: lastMonth = month.subtract(1,'month');
-    $: sum = $purchases ? Object.entries($purchases).filter(([_, value]: [string, Purchase]) => dayjs(value.date).month() === month.month()).reduce((t, [_, value]: [string, Purchase]) => t + convertToJPY(value.amount, value.currency), 0).toFixed(2) : "0.00";
-    $: last_month_sum = $purchases ? Object.entries($purchases).filter(([_, value]: [string, Purchase]) => dayjs(value.date).month() === lastMonth.month()).reduce((t, [_, value]: [string, Purchase]) => t + convertToJPY(value.amount, value.currency), 0).toFixed(2) : "0.00";
+    function sum_categories(r, p) {
+        return p.reduce((acc, cur) => {
+            const existing = acc.find((item) => item.category === cur.category);
+            if (existing) {
+                existing.amount += convertToJPY(r, cur.amount, cur.currency);
+            } else {
+                acc.push({ category: cur.category, amount: convertToJPY(r, cur.amount, cur.currency) });
+            }
+            return acc;
+        }, []).sort((a, b) => a.category.localeCompare(b.category));
+    }
 
-    $: sum_category = pur.reduce((acc, cur) => {
-        const existing = acc.find((item) => item.category === cur.category);
-        if (existing) {
-            existing.amount += convertToJPY(cur.amount, cur.currency);
-        } else {
-            acc.push({ category: cur.category, amount: convertToJPY(cur.amount, cur.currency) });
-        }
-        return acc;
-    }, []).sort((a, b) => a.category.localeCompare(b.category));
+    $: lastMonth = month.subtract(1,'month');
+    $: sum = $purchases ? Object.entries($purchases).filter(([_, value]: [string, Purchase]) => dayjs(value.date).month() === month.month()).reduce((t, [_, value]: [string, Purchase]) => t + convertToJPY($rate, value.amount, value.currency), 0).toFixed(2) : "0.00";
+    $: last_month_sum = $purchases ? Object.entries($purchases).filter(([_, value]: [string, Purchase]) => dayjs(value.date).month() === lastMonth.month()).reduce((t, [_, value]: [string, Purchase]) => t + convertToJPY($rate, value.amount, value.currency), 0).toFixed(2) : "0.00";
+
+    $: sum_category = sum_categories($rate, pur);
 </script>
 
 <h5>Total {month.format('MMM')}: {sum} JPY</h5>

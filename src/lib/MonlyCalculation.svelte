@@ -2,7 +2,7 @@
     import dayjs from "dayjs";
 
     import {purchases, type Purchase} from '../stores/purchases';
-    import {convertToJPY} from '../stores/rates';
+    import {rate, convertToJPY} from '../stores/rates';
 
     let currentMonth = dayjs().startOf("month");
 
@@ -57,7 +57,7 @@
     }
 
 
-    function get_purchases(categories, payer){
+    function get_purchases(rate, categories, payer){
         return $purchases ? Object.entries($purchases)
             .filter(([_, value]: [string, Purchase]) => filter_current_month(value) )
             .filter(([_, value]: [string, Purchase]) =>  filter_selected_category(value, categories) )
@@ -66,9 +66,9 @@
             .reduce((t, [_, value]: [string, Purchase]) => {
                 let i = t.findIndex(c => c.category == value.category)
                 if (i >= 0){
-                    t[i] = {category: t[i].category, amount: t[i].amount + convertToJPY(value.amount, value.currency)}
+                    t[i] = {category: t[i].category, amount: t[i].amount + convertToJPY(rate, value.amount, value.currency)}
                 }else{
-                    t.push({category: value.category, amount: convertToJPY(value.amount, value.currency)})
+                    t.push({category: value.category, amount: convertToJPY(rate, value.amount, value.currency)})
                 }
                 return t
             }, []).sort((a, b) => {
@@ -81,7 +81,7 @@
             }) : []
     }
 
-    function private_purchase_david(categories){
+    function private_purchase_david(rate, categories){
         const payer = "david";
         return $purchases ? Object.entries($purchases)
             .filter(([_, value]: [string, Purchase]) => filter_current_month(value) )
@@ -90,9 +90,9 @@
             .reduce((t, [_, value]: [string, Purchase]) => {
                 let i = t.findIndex(c => c.category == value.category)
                 if (i >= 0){
-                    t[i] = {category: t[i].category, amount: t[i].amount + convertToJPY(value.amount, value.currency)}
+                    t[i] = {category: t[i].category, amount: t[i].amount + convertToJPY(rate, value.amount, value.currency)}
                 }else{
-                    t.push({category: value.category, amount: convertToJPY(value.amount, value.currency)})
+                    t.push({category: value.category, amount: convertToJPY(rate, value.amount, value.currency)})
                 }
                 return t
             }, []).sort((a, b) => {
@@ -111,11 +111,11 @@
 
     $: categories =  purchases_categories($purchases, currentMonth.year(), currentMonth.month());
 
-    $: david_p = get_purchases(categories, "david");
-    $: naoko_p = get_purchases(categories, "naoko");
+    $: david_p = get_purchases($rate, categories, "david");
+    $: naoko_p = get_purchases($rate, categories, "naoko");
     $: david = total(david_p);
     $: naoko = total(naoko_p);
-    $: david_priv = private_purchase_david(categories);
+    $: david_priv = private_purchase_david($rate, categories);
     $: david_priv_amex = total(david_priv);
 </script>
 

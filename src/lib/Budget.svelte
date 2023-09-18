@@ -4,14 +4,14 @@
   import { budget } from "../stores/budget";
   import { purchases, type Purchase } from "../stores/purchases";
   import {nFormatter} from "../functions/utils";
-  import { convertToJPY } from "../stores/rates";
+  import { rate, convertToJPY } from "../stores/rates";
   import dayjs from "dayjs";
   import localizedFormat from 'dayjs/plugin/localizedFormat';
   dayjs.extend(localizedFormat);
 
   export let currentYear = dayjs().year();
 
-  function purchases_categories(purchases: {[id: string]: Purchase}, budget_categories, year, month) {
+  function purchases_categories(r, purchases: {[id: string]: Purchase}, budget_categories, year, month) {
     const purchases_categories = new Set(
       Object.entries(purchases)
         .filter(([, p]: [string, Purchase]) => dayjs(p.date).year() == year && (month == null || dayjs(p.date).month() == month))
@@ -25,7 +25,7 @@
       category: c,
       sum: Object.entries(purchases)
         .filter(([, p]) => p.category == c && (month == null || dayjs(p.date).month() == month))
-        .map(([, p]) => convertToJPY(p.amount, p.currency))
+        .map(([, p]) => convertToJPY(r, p.amount, p.currency))
         .reduce((a, v) => a + v, 0),
     }));
   }
@@ -40,7 +40,7 @@
   $: budget_categories = current_budget
     ? current_budget.categories.map((c) => c.name)
     : [];
-  $: uncategorized =  purchases_categories($purchases, budget_categories, currentYear, selectedMonth);
+  $: uncategorized =  purchases_categories($rate, $purchases, budget_categories, currentYear, selectedMonth);
   $: uncategorized_sum = total_uncategorized(uncategorized);
 </script>
 

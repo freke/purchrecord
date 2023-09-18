@@ -3,7 +3,7 @@
     import { purchases, type Purchase } from "../../stores/purchases";
     import { budget } from "../../stores/budget";
     import type { Budget } from "../../stores/budget";
-    import { convertToJPY } from "../../stores/rates";
+    import { rate, convertToJPY } from "../../stores/rates";
     import {nFormatter} from "../../functions/utils";
     import dayjs from "dayjs";
 
@@ -11,13 +11,13 @@
     export let currentYear = dayjs().year();
     export let selectedMonth: number | null = null;
 
-    function monthTotals(purchases, category, month) {
+    function monthTotals(r, purchases, category, month) {
         if( selectedMonth == null){
             return Object.entries(purchases)
                 .filter(([, p]: [string, Purchase]) => p.category === category)
                 .reduce(
                     (acc, [, p]: [string, Purchase]) =>
-                        acc + convertToJPY(p.amount, p.currency),
+                        acc + convertToJPY(r, p.amount, p.currency),
                     0
                 ).toFixed(2);
         }
@@ -25,7 +25,7 @@
             .filter(([, p]: [string, Purchase]) => p.category === category && dayjs(p.date).month() === month)
             .reduce(
                 (acc, [, p]: [string, Purchase]) =>
-                    acc + convertToJPY(p.amount, p.currency),
+                    acc + convertToJPY(r, p.amount, p.currency),
                 0
             ).toFixed(2);
     }
@@ -47,7 +47,7 @@
         series: [
             {
                 name: "Expenses",
-                data: $purchases ? [monthTotals($purchases, category, selectedMonth)] : [],
+                data: $purchases ? [monthTotals($rate, $purchases, category, selectedMonth)] : [],
             },
             {
                 name: "Budget",

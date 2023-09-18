@@ -5,7 +5,7 @@
   import type { Purchase } from "../stores/purchases";
   import { deleted } from "../stores/deleted";
   import Form from "./Form.svelte";
-  import {convertToJPY} from '../stores/rates';
+  import {rate, convertToJPY} from '../stores/rates';
   import dayjs from "dayjs";
   import localizedFormat from "dayjs/plugin/localizedFormat";
   import Summary from "./Components/Summary.svelte";
@@ -89,14 +89,14 @@
     )).map((c) => {return {name: c, selected: true}}).sort((a, b) => a.name.localeCompare(b.name));
   }
 
-  function filteredTotal(categories, payer) {
+  function filteredTotal(r, categories, payer) {
     return $purchases ? Object.entries($purchases)
       .filter(([_, value]: [string, Purchase]) => dayjs(value.date).month() == currentMonth.month() && categories.find(c => c.name == value.category).selected )
       .filter(([_, value]: [string, Purchase]) => dayjs(value.date).month() == currentMonth.month() && payer.find(p => {
                   var paid = value.paid || "unkown"
                   return p.name == paid
                 }).selected)
-      .reduce((t, [_, value]: [string, Purchase]) => t + convertToJPY(value.amount, value.currency), 0)
+      .reduce((t, [_, value]: [string, Purchase]) => t + convertToJPY(r, value.amount, value.currency), 0)
       .toFixed(2) : "0.00";
   }
 
@@ -114,7 +114,7 @@
     : [];
   $: categories =  purchases_categories($purchases, currentMonth.year(), currentMonth.month());
   $: payer = purchases_paied_by($purchases, currentMonth.year(), currentMonth.month());
-  $: filtered_total = filteredTotal(categories, payer);
+  $: filtered_total = filteredTotal($rate, categories, payer);
 </script>
 
 {#if selectedItem}
