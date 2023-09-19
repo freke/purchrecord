@@ -1,6 +1,6 @@
 <header class="primary-container">
-	<nav>
-		<h5 class="max center-align">PurchRecord</h5>
+	<nav class="no-margin"> 
+		<h5 class="max">PurchRecord</h5>
 		<GoogleSync />
 	</nav>
 	{#if $progress}

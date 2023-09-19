@@ -1,6 +1,8 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import dayjs from "dayjs";
+    import jwt_decode from "jwt-decode";
+    import { user } from "../stores/auth";
     import type { Purchase } from "../stores/purchases";
     import { purchases } from "../stores/purchases";
     import { deleted } from "../stores/deleted";
@@ -8,12 +10,13 @@
     import type { Budget } from "../stores/budget";
     import { progress } from "../stores/progress";
 
-    const clientId =
-        "732312482119-fs9q45r0j0pmfmjm1dren2hr9dodk8fn.apps.googleusercontent.com";
+    const clientId ="732312482119-fs9q45r0j0pmfmjm1dren2hr9dodk8fn.apps.googleusercontent.com";
     const spreadsheetId = "1P0gzwKMG_eBiPfgdaI3Ah2ABkAjJF1-eOpxms3nHy7A";
     const purchasesSheetName = "Purchases";
     const purchasesCurrentYear = `${purchasesSheetName}${dayjs().year()}`;
     const purchasesSheetRange = "A2:H";
+
+    let loginButton: HTMLDivElement | null = null;
 
     let gapiLoadOkay = null;
     let gapiLoadFail = null;
@@ -43,8 +46,9 @@
         return response;
     }
 
-    onMount(async () => {
-        await gapiLoadPromise;
+    globalThis.handleLogin = async (response: any) => {
+        $user = jwt_decode(response.credential);
+
         await new Promise((resolve, reject) => {
             gapi.load("client", { callback: resolve, onerror: reject });
         });
@@ -72,6 +76,23 @@
                 reject(err);
             }
         });
+    }
+
+    onMount(async () => {
+        await gapiLoadPromise;
+
+        globalThis.google.accounts.id.initialize({
+            client_id: clientId,
+            callback: globalThis.handleLogin,
+            context: "signin",
+            auto_select: true,
+            itp_support: true
+        });
+
+        globalThis.google.accounts.id.renderButton(
+            loginButton,
+            { theme: "filled_black", size: "large", shape: "pill"}
+        );
     });
 
     async function newPurchaseSheet(spreadsheet_id, name) {
@@ -535,6 +556,12 @@
         ) && $deleted.length === 0;
 </script>
 
+<style>
+    .hidden {
+        visibility: hidden
+    }
+</style>
+
 <svelte:head>
     <script
         async
@@ -553,10 +580,19 @@
     ></script>
 </svelte:head>
 
-<div class="g_id_signin" data-type="standard" />
 
+<div id="g_id_onload"
+    data-client_id="{clientId}"
+    data-context="signin"
+    data-ux_mode="popup"
+    data-callback="handleLogin"
+    data-auto_select="true"
+    data-itp_support="true">
+</div>
+<div bind:this={loginButton} class:hidden={$user}></div>
+{#if $user}
 <button
-    class="extend circle small-elevate"
+    class="extend circle"
     class:secondary={all_synced}
     on:click={sync}
 >
@@ -567,3 +603,7 @@
     {/if}
     <span>Sync</span>
 </button>
+<button class="circle transparent">
+    <img class="responsive" src="{$user.picture}">
+</button>
+{/if}
