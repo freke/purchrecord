@@ -1,12 +1,13 @@
 <script lang="ts">
-    import "beercss";
-	  import "material-dynamic-colors";
     import { v4 as uuidv4 } from 'uuid';
     import {purchases} from '../stores/purchases';
     import type {Purchase} from '../stores/purchases';
     import DateInput from './Components/DateInput.svelte';
     import Device from 'svelte-device-info'
     import dayjs from "dayjs";
+
+    import { Button, Input, NumberInput, Textarea, Radio, Select, Label, Fileupload } from 'flowbite-svelte';
+    import { CameraFotoOutline, FileImageOutline } from 'flowbite-svelte-icons';
 
     export let submitFunction = () => {};
     export let cancelFunction = () => {};
@@ -93,7 +94,7 @@
       resetFromData();
     }
 
-    let currencies = ['JPY', 'SEK', 'GBP', 'DKK'];
+    let currencies = [{value:'JPY', name:'JPY'}, {value:'SEK', name:'SEK'}, {value:'GBP', name:'GPB'}, {value:'DKK', name:'DKK'}];
 
     let payedByOptions = [
         'Naoko Cash',
@@ -126,77 +127,55 @@
 
 </script>
 
-<article>
+<article class="container mx-auto px-4">
   <form>
-    <div class="field label border">
-      <label for="date" class="active">Date</label>
+      <Label for="date">Date</Label>
       <DateInput id="date" bind:date={formData.date} />
-    </div>
-    <div class="field label border">
-      <input id="amount" type="number" bind:value={formData.amount}>
-      <label for="amount">Amount</label>
-    </div>
-    <div class="field label border">
-      <input id="category" type="text" bind:value={formData.category} list="CategoryOptions">
-      <label for="category">Category</label>
+      <Label for="amount">Amount</Label>
+      <NumberInput id="amount" bind:value={formData.amount} />
+      <Label for="category">Category</Label>
+      <Input id="category" type="text" bind:value={formData.category} list="CategoryOptions" />
       <datalist id="CategoryOptions">
         {#each categoryOptions as category}
         <option value="{category}">{category}</option>
         {/each}
       </datalist>
-    </div>
-    <div class="field label suffix border">
-      <select id="currency" bind:value={formData.currency}>
-        {#each currencies as currency}
-          <option value={currency}>{currency}</option>
-        {/each}
-      </select>
-      <label for="currency" class="active">Currency</label>
-      <i>arrow_drop_down</i>
-    </div>
-    <div class="field text label border">
-      <input id="paid" bind:value={formData.paid} list="paidByOptions"/>
-      <label for="paid">Paid by</label>
+      <Label for="currency">Currency</Label>
+      <Select id="currency" items={currencies} bind:value={formData.currency}/>
+      <Label for="paid">Paid by</Label>
+      <Input id="paid" bind:value={formData.paid} list="paidByOptions"/>
       <datalist id="paidByOptions">
         {#each payedByOptions as payedBy}
         <option value="{payedBy}">{payedBy}</option>
         {/each}
       </datalist>
-    </div>
-    <div class="field textarea label border">
-      <textarea id="note" bind:value={formData.note}></textarea>
-      <label for="note">Note</label>
-    </div>
+      <Label for="note">Note</Label>
+      <Textarea id="note" bind:value={formData.note} />
     {#if Device.isMobile}
-    <label class="switch">
-      <input type="checkbox" bind:checked={use_camera}>
-      <span>
-        <i>photo_library</i>
-        <i>photo_camera</i>
-      </span>
-    </label>
-    {/if}
-    <div class="field label prefix border middle-align">
-      {#if use_camera && Device.isMobile}
-        <i>photo_camera</i>
-      {:else}
-        <i>description</i>
-      {/if}
-      <input id="photo" type="text">
-      <label for="photo">File</label>
-      {#if use_camera && Device.isMobile}
-        <input id="photo_file" type="file" accept="image/*"  capture="environment" on:change={handleImageCapture} bind:value={formData.image} />
-      {:else}
-        <input id="photo_file" type="file" accept="image/*" on:change={handleImageCapture} bind:value={formData.image} />
-      {/if}
-      <label for="photo_file">File</label>
+    <div>
+      <Radio name="image_src" custom bind:checked={use_camera}>
+        <CameraFotoOutline size="sm"/>
+      </Radio>
+      <Radio name="image_src" custom>
+        <FileImageOutline size="sm"/>
+      </Radio>
     </div>
-    <div class="row right-align">
-      <button class="border" on:click={resetFrom}>Cancel</button>
-      <button class="small-elevate" on:click={submitForm}>{isNew ? 'Create' : 'Update'}</button>
+    {/if}
+    
+    <div>
+      <Label for="photo_file">File</Label>
+      {#if use_camera && Device.isMobile}
+        <Fileupload id="photo_file" type="file" accept="image/*"  capture="environment" on:change={handleImageCapture} bind:value={formData.image} />
+      {:else}
+        <Fileupload id="photo_file" type="file" accept="image/*" on:change={handleImageCapture} bind:value={formData.image} />
+      {/if}
+    </div>
+    <div class="mt-4">
+      <Button color="alternative" on:click={resetFrom}>Cancel</Button>
+      <Button on:click={submitForm}>{isNew ? 'Create' : 'Update'}</Button>
     </div>
     {#if formData.image}
-      <div class="row center-align">
+      <div class="mt-4">
         <img src="{formData.image}" alt="Receipt"/>
       </div>
     {/if}

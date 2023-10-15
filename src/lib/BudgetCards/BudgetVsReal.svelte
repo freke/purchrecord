@@ -1,11 +1,11 @@
 <script lang="ts">
-    import { chart } from "svelte-apexcharts";
     import { purchases, type Purchase } from "../../stores/purchases";
     import { budget } from "../../stores/budget";
     import type { Budget } from "../../stores/budget";
     import { rate, convertToJPY } from "../../stores/rates";
     import {nFormatter} from "../../functions/utils";
     import dayjs from "dayjs";
+    import { Chart, Heading, Secondary } from 'flowbite-svelte';
 
     export let category = "";
     export let currentYear = dayjs().year();
@@ -99,12 +99,8 @@
     };
 </script>
 
-<article class="no-padding round">
-    <div class="responsive small top-round" >
-        <div class="padding">
-            <h5>{category}</h5>
-            <p>Buget vs Expenses</p>
-            <div use:chart={options}/>
-        </div>
-    </div>
-</article>
+<div class="p-2">
+    <Heading tag="h5">{category}
+    <Secondary>Buget vs Expenses</Secondary></Heading>
+    <Chart {options} />
+</div>

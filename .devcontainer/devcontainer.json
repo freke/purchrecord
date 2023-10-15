@@ -13,7 +13,7 @@
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "uname -a",
+	// "postCreateCommand": "source /home/vscode/.shrc",
 
 	// Configure tool-specific properties.
 	"customizations": {

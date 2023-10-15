@@ -7,7 +7,10 @@
   import { rate, convertToJPY } from "../stores/rates";
   import dayjs from "dayjs";
   import localizedFormat from 'dayjs/plugin/localizedFormat';
+  import localeData from 'dayjs/plugin/localeData';
   dayjs.extend(localizedFormat);
+  dayjs.extend(localeData);
+  import { Select, Label, Card, Heading } from 'flowbite-svelte';
 
   export let currentYear = dayjs().year();
 
@@ -35,6 +38,7 @@
   }
 
   let selectedMonth = null;
+  let months = [{name:"Year", value:null},...dayjs.months().map(function (value, index){ return {name:value, value:index}})]
 
   $: current_budget = $budget.find((b) => b.year === currentYear);
   $: budget_categories = current_budget
@@ -44,39 +48,28 @@
   $: uncategorized_sum = total_uncategorized(uncategorized);
 </script>
 
-<div class="grid">
-  <div class="s12">
-    <Total />
+<div class="flex flex-row flex-wrap place-content-between gap-y-4 gap-x-2">
+  <div class="basis-full">
+    <Card size="xl">
+      <Total />
+    </Card>
   </div>
-
-  <div class="s12">
-    <article class="no-padding round">
-      <div class="responsive small top-round">
-        <div class="padding">
-          <div class="field label suffix border">
-            <select id="month" bind:value={selectedMonth}>
-              <option value={null}>Year</option>
-              {#each dayjs.months() as month, i}
-                <option value={i}>{month}</option>
-              {/each}
-            </select>
-            <label for="month" class="active">Periode</label>
-            <i>arrow_drop_down</i>
-          </div>
-        </div>
-      </div>
-    </article>
+  <div class="basis-full">
+    <Card size="xl">
+      <Label for="month" class="active">Periode</Label>
+      <Select id="month" items={months} bind:value={selectedMonth} />
+    </Card>
   </div>
   {#each budget_categories as category}
-    <div class="s6 l4">
+    <Card size="xl" class="grow">
       <BudgetVsReal {category} selectedMonth={selectedMonth}/>
-    </div>
+    </Card>
   {/each}
-  <div class="s12">
-    <h4>Uncategorized: {nFormatter(uncategorized_sum, 2)}¥ total</h4>
-    <div class="grid">
+  <div class="basis-full">
+    <Heading tag="h4">Uncategorized: {nFormatter(uncategorized_sum, 2)}¥ total</Heading>
+    <div class="flex flex-row flex-wrap">
       {#each uncategorized as category}
-        <div class="s4">
+        <div class="basis-full md:basis-1/2 lg:basis-1/4">
           {category.category}: {nFormatter(category.sum, 2)}¥
         </div>
       {/each}

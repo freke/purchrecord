@@ -1,6 +1,4 @@
 <script lang="ts">
-  import "beercss";
-  import "material-dynamic-colors";
   import { purchases } from "../stores/purchases";
   import type { Purchase } from "../stores/purchases";
   import { deleted } from "../stores/deleted";
@@ -10,6 +8,8 @@
   import localizedFormat from "dayjs/plugin/localizedFormat";
   import Summary from "./Components/Summary.svelte";
   dayjs.extend(localizedFormat);
+  import { Button, ButtonGroup, Checkbox, Card, Modal, Heading, Hr, P } from 'flowbite-svelte';
+  import { ExclamationCircleOutline, ChevronLeftOutline, ChevronRightOutline, CheckCircleOutline, ImageOutline, TrashBinOutline, EditOutline } from 'flowbite-svelte-icons';
 
   let currentMonth = dayjs().startOf("month");
   let selectedItem;
@@ -91,7 +91,7 @@
 
   function filteredTotal(r, categories, payer) {
     return $purchases ? Object.entries($purchases)
-      .filter(([_, value]: [string, Purchase]) => dayjs(value.date).month() == currentMonth.month() && categories.find(c => c.name == value.category).selected )
+      .filter(([_, value]: [string, Purchase]) => dayjs(value.date).month() == currentMonth.month() && categories.find(c => c.name == value.category) && categories.find(c => c.name == value.category).selected )
       .filter(([_, value]: [string, Purchase]) => dayjs(value.date).month() == currentMonth.month() && payer.find(p => {
                   var paid = value.paid || "unkown"
                   return p.name == paid
@@ -128,134 +128,111 @@
   </div>
 {/if}
 
-<div class="overlay" class:active={showConfirmDialog || showEditDialog} />
-<div class="modal" class:active={showConfirmDialog}>
-  <h5>Warning</h5>
-  <div>Are you sure you want to delete?</div>
-  <nav class="right-align">
-    <button class="border" on:click={cancel_dialog}>Cancel</button>
-    <button on:click={confirm_delete_id}>Confirm</button>
-  </nav>
-</div>
+<Modal bind:open={showConfirmDialog} size="xs" autoclose>
+  <div class="text-center">
+    <ExclamationCircleOutline class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" />
+    <Heading tag="h3" class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Are you sure you want to delete?</Heading>
+    <Button color="red" class="mr-2" on:click={confirm_delete_id}>Yes, I'm sure</Button>
+    <Button color="alternative" on:click={cancel_dialog}>No, cancel</Button>
+  </div>
+</Modal>
 
-<div class="modal max" class:active={showEditDialog}>
-  <h5>Edit</h5>
+<Modal title="Edit" bind:open={showEditDialog}>
   <Form
     submitFunction={save_edit}
     cancelFunction={cancel_dialog}
     formData={selectedItem}
   />
-</div>
+</Modal>
 
-<article>
+<Card size="xl" class="my-4">
   <Summary month={currentMonth} {pur} />
-  <div class="space" />
-  <nav class="no-space">
-    <button class="border left-round max" on:click={prevMonth}>
-      <i>navigate_before</i>
-    </button>
-    <button
-      class="border no-round max"
-      class:fill={isInCurrentMonth(currentMonth)}
-    >
-      <span>{currentMonth.format("MMM YYYY")}</span>
-    </button>
-    <button class="border right-round max" on:click={nextMonth}>
-      <i>navigate_next</i>
-    </button>
-  </nav>
-</article>
+  <div class="justify-center items-center space-y-4 sm:flex sm:space-y-0 sm:space-x-4">
+    <ButtonGroup>
+      <Button on:click={prevMonth}>
+        <ChevronLeftOutline />
+      </Button>
+      <Button color={isInCurrentMonth(currentMonth)?"primary":"alternative"}>
+        <span>{currentMonth.format("MMM YYYY")}</span>
+      </Button>
+      <Button on:click={nextMonth}>
+        <ChevronRightOutline />
+      </Button>
+    </ButtonGroup>
+  </div>
+</Card>
 
-<article>
-  <h6>Category Filter</h6>
-  <div class="grid">
+<Card size="xl" class="my-4">
+  <Heading tag="h3">Category Filter</Heading>
+  <div class="flex flex-row flex-wrap">
     {#each categories as category}
-      <label class="s6 l2 checkbox">
-        <input type="checkbox" checked={category.selected} on:change={() => category.selected = !category.selected}>
-        <span>{category.name}</span>
-      </label>
+      <div class="basis-1/6">
+        <Checkbox checked={category.selected} on:change={() => category.selected = !category.selected}>{category.name}</Checkbox>
+      </div>
     {/each}
   </div>
-  <h6>Payer Filter</h6>
-  <div class="grid">
+  <Heading tag="h3" class="mt-4">Payer Filter</Heading>
+  <div class="flex flex-row flex-wrap">
     {#each payer as payed_by}
-      <label class="s6 l2 checkbox">
-        <input type="checkbox" checked={payed_by.selected} on:change={() => payed_by.selected = !payed_by.selected}>
-        <span>{payed_by.name}</span>
-      </label>
+      <div class="basis-1/6">
+        <Checkbox checked={payed_by.selected} on:change={() => payed_by.selected = !payed_by.selected}>{payed_by.name}</Checkbox>
+      </div>
     {/each}
   </div>
-  <div class="space" />
-  <div>
-    <h6>Filterd Total: {filtered_total} JPY</h6>
-  </div>
-</article>
+  <Hr classHr="my-8"/>
+  <Heading tag="h2">Filterd Total: {filtered_total} JPY</Heading>
+</Card>
 
-<div class="space" />
+<div class="w-full mt-8 p-4">
 {#each pur as cardData}
   {#if categories.find((c) => c.name == cardData.category).selected}
     {#if payer.find((c) => c.name == (cardData.paid || "unkown")).selected}
-      <div class="row">
-        <i class:red-text={!cardData.sync} class:green-text={cardData.sync}
-          >{cardData.sync ? "check_circle" : "error"}</i
-        >
-        <div class="max">
+      <div class="flex flex-row space-x-4 items-center">
+        {#if cardData.sync}
+          <CheckCircleOutline class="text-green-400"/>
+        {:else}
+          <ExclamationCircleOutline class="text-red-400"/>
+        {/if}
+        <div class="grow">
           <div>
             <span class="large bold"
               >{cardData.amount.toFixed(2)} {cardData.currency}</span
             > <span>{cardData.category || ""}</span>
           </div>
-          <div class="inline">
-            <div class="small-text">{dayjs(cardData.date).format("L")}</div>
+          <div class="flex flex-row">
+            <P size="sm">{dayjs(cardData.date).format("L")}</P>
             {#if cardData.paid}
-              <div class="small-text bold" style="margin-left: 10px">Paid:</div><div class="small-text">{cardData.paid}</div>
+              <P size="sm" weight="bold" class="ml-2">Paid:</P><P size="sm">{cardData.paid}</P>
             {/if}
           </div>
-          <p class="small-text">{cardData.note}</p>
+          <P size="sm">{cardData.note}</P>
         </div>
         {#if cardData.image}
           {#if cardData.sync}
             <a href={cardData.image}>
-              <i>satellite</i>
+              <ImageOutline />
             </a>
           {:else}
-            <button
-              class="transparent circle"
-              on:click={() => show_image(cardData)}
-            >
-              <i>image</i>
-            </button>
+            <Button outline={true} class="!p-2 m-1" on:click={() => show_image(cardData)}>
+              <ImageOutline class="w-4 h-4"/>
+            </Button>
           {/if}
         {/if}
 
         {#if !cardData.sync}
-          <button
-            class="transparent circle"
-            on:click={() => edit_purchase(cardData)}
-          >
-            <i>edit</i>
-          </button>
+          <Button outline={true} class="!p-2 m-1" on:click={() => edit_purchase(cardData)}>
+            <EditOutline class="w-4 h-4"/>
+          </Button>
         {/if}
-        <button class="transparent circle" on:click={() => delete_id(cardData)}>
-          <i>delete</i>
-        </button>
+        <Button outline={true} class="!p-2 m-1" on:click={() => delete_id(cardData)}>
+          <TrashBinOutline class="w-4 h-4"/>
+        </Button>
       </div>
+      <Hr classHr="my-1"/>
     {/if}
   {/if}
 {/each}
+</div>
 
 <style>
-  i {
-    padding: 5px;
-  }
-  .green-text {
-    color: #008800 !important;
-  }
-  .checkbox {
-    margin: 0;
-  }
-  .inline {
-    display: inline-flex;
-    gap: 2px;
-  }
 </style>

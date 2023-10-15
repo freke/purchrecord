@@ -1,34 +1,52 @@
-<header class="primary-container">
-	<nav class="no-margin"> 
-		<h5 class="max">PurchRecord</h5>
-		<GoogleSync />
-	</nav>
+<header>
+	<Navbar class="border-b">
+		<NavBrand>
+			<img src="icon.svg" class="mr-3 h-6 sm:h-9" alt="Logo">
+			<span class="self-center whitespace-nowrap text-xl font-semibold dark:text-white">PurchRecord</span>
+		</NavBrand>
+		<div class="flex md:order-2">
+			<GoogleSync />
+		</div>
+	</Navbar>
 	{#if $progress}
-	<BarLoader />
+		<BarLoader />
 	{/if}
 </header>
-<main class="responsive">	
-	<div>
-		<div class="tabs">
-		{#each pages as page }
-			<a href="#/" on:click={() => select_page(page)} on:keydown={(e) => handleKeyDown(e, page)} class:active={selected==page}>
-				<i>{page.icon}</i>
-				<span class="l m capitalize">{page.name}</span>
-				<div class="tooltip bottom capitalize">{page.name}</div>
-		  	</a>
-		{/each}
-		</div>
-	</div>
-	<div class="page padding active">
-		<svelte:component this={selected.component}/>
-    </div>
+<main class="container mx-auto mt-1"> 
+	<Tabs>
+		<TabItem open>
+			<div slot="title" class="flex items-center gap-2">
+				<CirclePlusOutline size="sm" />
+				New
+			</div>
+			<Form/>
+		</TabItem>
+		<TabItem>
+			<div slot="title" class="flex items-center gap-2">
+				<CalendarMonthOutline size="sm" />
+				Report
+			</div>
+			<Report/>
+		</TabItem>
+		<TabItem>
+			<div slot="title" class="flex items-center gap-2">
+				<ChartMixedDollarSolid size="sm" />
+				Budget
+			</div>
+			<Budget/>
+		</TabItem>
+		<TabItem>
+			<div slot="title" class="flex items-center gap-2">
+				<ArrowsRepeatOutline size="sm" />
+				Monlthly
+			</div>
+			<MonlyCalculation/>
+		</TabItem>
+	</Tabs>
 </main>
 
 
 <script lang="ts">
-	import "beercss";
-	import "material-dynamic-colors";
-
 	import { progress } from "./stores/progress";
 	import GoogleSync from "./lib/GoogleSync.svelte";
 	import Form from "./lib/Form.svelte";
@@ -36,6 +54,9 @@
 	import Budget from "./lib/Budget.svelte";
 	import MonlyCalculation from "./lib/MonlyCalculation.svelte";
 	import BarLoader from "./lib/Components/BarLoader.svelte";
+
+	import { Navbar, NavBrand, Tabs, TabItem } from 'flowbite-svelte';
+	import {CirclePlusOutline, CalendarMonthOutline, ChartMixedDollarSolid, ArrowsRepeatOutline} from 'flowbite-svelte-icons';
 
 	const urlParams = new URLSearchParams(window.location.search);
     const isBeta = urlParams.has('beta');
@@ -74,12 +95,8 @@
 
 <svelte:head>
 	<!-- Fonts -->
-	<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined">
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,600,700">
 </svelte:head>
 
 <style>
-	.capitalize{
-		text-transform: capitalize;
-	}
 </style>

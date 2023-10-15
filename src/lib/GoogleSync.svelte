@@ -3,12 +3,13 @@
     import dayjs from "dayjs";
     import jwt_decode from "jwt-decode";
     import { user } from "../stores/auth";
-    import type { Purchase } from "../stores/purchases";
-    import { purchases } from "../stores/purchases";
+    import { purchases, type Purchase } from "../stores/purchases";
     import { deleted } from "../stores/deleted";
-    import { budget } from "../stores/budget";
-    import type { Budget } from "../stores/budget";
+    import { budget, type Budget } from "../stores/budget";
+    import { monthly, type MonthlyTransfer } from "../stores/monthly";
     import { progress } from "../stores/progress";
+    import { Avatar, Button } from 'flowbite-svelte';
+    import {CloudArrowUpOutline, BadgeCheckOutline} from 'flowbite-svelte-icons';
 
     const clientId ="732312482119-fs9q45r0j0pmfmjm1dren2hr9dodk8fn.apps.googleusercontent.com";
     const spreadsheetId = "1P0gzwKMG_eBiPfgdaI3Ah2ABkAjJF1-eOpxms3nHy7A";
@@ -81,7 +82,7 @@
     onMount(async () => {
         await gapiLoadPromise;
 
-        globalThis.google.accounts.id.initialize({
+        window.google.accounts.id.initialize({
             client_id: clientId,
             callback: globalThis.handleLogin,
             context: "signin",
@@ -89,7 +90,7 @@
             itp_support: true
         });
 
-        globalThis.google.accounts.id.renderButton(
+        window.google.accounts.id.renderButton(
             loginButton,
             { theme: "filled_black", size: "large", shape: "pill"}
         );
@@ -127,6 +128,54 @@
                         sheetId: newSheetId,
                     },
                     rows: [{ values: values }],
+                    fields: "userEnteredValue",
+                },
+            },
+        ];
+
+        const spreadsheets_response = await callGoogleApi(
+            gapi.client.sheets.spreadsheets.batchUpdate,
+            { spreadsheetId: spreadsheet_id },
+            { requests: requests }
+        );
+
+        console.log(`New spreadsheet created with ID: ${newSheetId}`);
+        return spreadsheets_response.result.replies[0].addSheet;
+    }
+
+    async function newMonthlyTransferSheet(spreadsheet_id, name) {
+        const min = 10000;
+        const max = 99999;
+        const newSheetId = Math.floor(Math.random() * (max - min + 1)) + min;
+        const requests = [
+            {
+                addSheet: {
+                    properties: {
+                        sheetId: newSheetId,
+                        title: name,
+                    },
+                },
+            },
+            {
+                updateCells: {
+                    start: {
+                        sheetId: newSheetId,
+                    },
+                    rows: [
+                        {values: { userEnteredValue: { stringValue: name } }},
+                        {values: [
+                            { userEnteredValue: { stringValue: "Naoko" } }, { userEnteredValue: { stringValue: "" } },
+                            { userEnteredValue: { stringValue: "Naoko Private" } }, { userEnteredValue: { stringValue: "" } },
+                            { userEnteredValue: { stringValue: "David" } }, { userEnteredValue: { stringValue: "" } },
+                            { userEnteredValue: { stringValue: "David Private" } }, { userEnteredValue: { stringValue: "" } },
+                        ] },
+                        {values: [
+                            { userEnteredValue: { stringValue: "Category" } }, { userEnteredValue: { stringValue: "Expense" } },
+                            { userEnteredValue: { stringValue: "Category" } }, { userEnteredValue: { stringValue: "Expense" } },
+                            { userEnteredValue: { stringValue: "Category" } }, { userEnteredValue: { stringValue: "Expense" } },
+                            { userEnteredValue: { stringValue: "Category" } }, { userEnteredValue: { stringValue: "Expense" } },
+                        ] },
+                    ],
                     fields: "userEnteredValue",
                 },
             },
@@ -522,6 +571,57 @@
         return [];
     }
 
+
+
+    async function addMonthly( monthly: MonthlyTransfer ): Promise<MonthlyTransfer> {
+        const name = `Monthly ${monthly.date}`
+        const sheet = await newMonthlyTransferSheet(spreadsheetId, name)
+        addRows(spreadsheetId, `${name}!A4:B`, monthly.naoko.map((i) => [i.category, i.amount]))
+        addRows(spreadsheetId, `${name}!C4:B`, monthly.naoko_private.map((i) => [i.category, i.amount]))
+        addRows(spreadsheetId, `${name}!E4:F`, monthly.david.map((i) => [i.category, i.amount]))
+        addRows(spreadsheetId, `${name}!G4:H`, monthly.david_private.map((i) => [i.category, i.amount]))
+        return monthly
+    }
+
+    async function getMonthly(): Promise<MonthlyTransfer[]> {
+        const year = dayjs().year();
+        let monthlies = []
+        for (let month = 0; month <= 11; month++) {
+            const name = `Monthly ${dayjs().month(month).format("MMM YYYY")}`
+            try{
+                const sheet = await findSheetByName(spreadsheetId, name);
+                const date = dayjs().month(month).format("MMM YYYY");
+                const naoko_row = await getRows(spreadsheetId, `${name}!A4:B`);
+                const naoko_private_row = await getRows(spreadsheetId, `${name}!C4:D`);
+                const david_row = await getRows(spreadsheetId, `${name}!E4:F`);
+                const david_private_row = await getRows(spreadsheetId, `${name}!G4:H`);
+                let naoko = []
+                let naoko_private = []
+                let david = []
+                let david_private = []
+                if (naoko_row.result.values)
+                    naoko =naoko_row.result.values.map( ([category, amount]) => {return {category: category, amount: parseFloat(amount) }} )
+                if (naoko_private_row.result.values)
+                    naoko_private = naoko_private_row.result.values.map( ([category, amount]) => {return {category: category, amount: parseFloat(amount) }} )
+                if (david_row.result.values)
+                    david = david_row.result.values.map( ([category, amount]) => {return {category: category, amount: parseFloat(amount) }} )
+                if (david_private_row.result.values)
+                    david_private = david_private_row.result.values.map( ([category, amount]) => {return {category: category, amount: parseFloat(amount) }} )
+                monthlies.push({
+                    saved:true, 
+                    date: date,
+                    naoko: naoko,
+                    naoko_private:naoko_private,
+                    david:david, 
+                    david_private:david_private,
+                })
+            } catch (err){
+                
+            }
+        }
+        return monthlies;
+    }
+
     async function sync() {
         $progress = true;
         const year = dayjs().year();
@@ -546,6 +646,11 @@
         $purchases = merge(await getPurchases(), $purchases || {});
         $deleted = [];
         $budget = (await getBudget(dayjs().year())) as Budget[];
+        for(const m of $monthly){
+            if(!m.saved)
+                addMonthly(m)
+        }
+        $monthly = (await getMonthly()) as MonthlyTransfer[]
         $progress = false;
     }
 
@@ -553,7 +658,11 @@
         Object.entries($purchases).reduce(
             (t, [_, value]: [string, Purchase]) => t && value.sync,
             true
-        ) && $deleted.length === 0;
+        ) && $deleted.length === 0 &&
+        $monthly.reduce(
+            (t, monthly: MonthlyTransfer) => t && monthly.saved,
+            true
+        )
 </script>
 
 <style>
@@ -591,19 +700,17 @@
 </div>
 <div bind:this={loginButton} class:hidden={$user}></div>
 {#if $user}
-<button
-    class="extend circle"
-    class:secondary={all_synced}
-    on:click={sync}
->
     {#if all_synced}
-        <i>cloud_done</i>
+    <Button size="sm" on:click={sync} color="alternative" class="mr-2">
+        <BadgeCheckOutline class="w-3.5 h-3.5 mr-2" />
+        Sync
+    </Button>
     {:else}
-        <i>cloud_sync</i>
+    <Button color="red" size="sm" on:click={sync} class="mr-2">
+        <CloudArrowUpOutline class="w-3.5 h-3.5 mr-2" />
+        Save
+    </Button>
     {/if}
-    <span>Sync</span>
-</button>
-<button class="circle transparent">
-    <img class="responsive" src="{$user.picture}">
-</button>
+
+<Avatar src="{$user.picture}" />
 {/if}

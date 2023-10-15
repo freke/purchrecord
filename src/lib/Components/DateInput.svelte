@@ -1,5 +1,6 @@
 <script lang="ts">
     import dayjs from 'dayjs';
+    import { Input } from 'flowbite-svelte';
   
     export let format = 'YYYY-MM-DD';
     export let date = dayjs().format(format);
@@ -14,4 +15,4 @@
     $: output(internal);
   </script>
   
-  <input {id} type="date" bind:value={internal} />
+  <Input {id} type="date" bind:value={internal} />

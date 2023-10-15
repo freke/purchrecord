@@ -6,6 +6,9 @@
     import localizedFormat from 'dayjs/plugin/localizedFormat';
     dayjs.extend(localizedFormat);
 
+    import { Heading, Secondary, Hr } from 'flowbite-svelte';
+
+
     export let month = dayjs()
     export let pur = []
 
@@ -22,16 +25,19 @@
     }
 
     $: lastMonth = month.subtract(1,'month');
-    $: sum = $purchases ? Object.entries($purchases).filter(([_, value]: [string, Purchase]) => dayjs(value.date).month() === month.month()).reduce((t, [_, value]: [string, Purchase]) => t + convertToJPY($rate, value.amount, value.currency), 0).toFixed(2) : "0.00";
-    $: last_month_sum = $purchases ? Object.entries($purchases).filter(([_, value]: [string, Purchase]) => dayjs(value.date).month() === lastMonth.month()).reduce((t, [_, value]: [string, Purchase]) => t + convertToJPY($rate, value.amount, value.currency), 0).toFixed(2) : "0.00";
+    $: sum = $purchases ? Object.entries($purchases).filter(([_, value]: [string, Purchase]) => dayjs(value.date).month() === month.month() && dayjs(value.date).year() === month.year()).reduce((t, [_, value]: [string, Purchase]) => t + convertToJPY($rate, value.amount, value.currency), 0).toFixed(2) : "0.00";
+    $: last_month_sum = $purchases ? Object.entries($purchases).filter(([_, value]: [string, Purchase]) => dayjs(value.date).month() === lastMonth.month() && dayjs(value.date).year() === month.year()).reduce((t, [_, value]: [string, Purchase]) => t + convertToJPY($rate, value.amount, value.currency), 0).toFixed(2) : "0.00";
 
     $: sum_category = sum_categories($rate, pur);
 </script>
 
-<h5>Total {month.format('MMM')}: {sum} JPY</h5>
-<h7>Total {lastMonth.format('MMM')}: {last_month_sum} JPY</h7>
-<div class="space"></div>
+<Heading>Total {month.format('MMM')}: {sum}¥<br>
+<Secondary>Total {lastMonth.format('MMM')}: {last_month_sum}¥</Secondary>
+</Heading>
+<Hr classHr="my-8"/>
 {#each sum_category as category}
-        <div class="row"><div class="max">{category.category}</div><div>{category.amount.toFixed(2)} JPY</div> </div>
-        <div class="divider"></div>
+        <div class="flex flex-row space-x-2">
+            <div class="basis-full">{category.category}</div><div>{category.amount.toFixed(2)}¥</div>
+        </div>
+        <Hr classHr="my-2"/>
 {/each}
