@@ -66,7 +66,7 @@
         await gisLoadPromise;
         await new Promise<void>((resolve, reject) => {
             try {
-                tokenClient = google.accounts.oauth2.initTokenClient({
+                tokenClient = window.google.accounts.oauth2.initTokenClient({
                     client_id: clientId,
                     scope: "https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive",
                     prompt: "consent",
@@ -81,8 +81,9 @@
 
     onMount(async () => {
         await gapiLoadPromise;
+        await gisLoadPromise;
 
-        google.accounts.id.initialize({
+        window.google.accounts.id.initialize({
             client_id: clientId,
             callback: globalThis.handleLogin,
             context: "signin",
@@ -90,7 +91,7 @@
             itp_support: true
         });
 
-        google.accounts.id.renderButton(
+        window.google.accounts.id.renderButton(
             loginButton,
             { theme: "filled_black", size: "large", shape: "pill"}
         );
