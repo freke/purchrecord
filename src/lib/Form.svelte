@@ -65,7 +65,7 @@
         img.onload = () => {
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
-          canvas.width = 320;
+          canvas.width = 640;
           canvas.height = (img.height / img.width) * canvas.width;
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
           const dataUrl = canvas.toDataURL(file.type);
