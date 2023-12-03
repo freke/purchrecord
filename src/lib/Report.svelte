@@ -95,7 +95,7 @@
       .filter(([_, value]: [string, Purchase]) => dayjs(value.date).month() == currentMonth.month() && payer.find(p => {
                   var paid = value.paid || "unkown"
                   return p.name == paid
-                }).selected)
+                }))
       .reduce((t, [_, value]: [string, Purchase]) => t + convertToJPY(r, value.amount, value.currency), 0)
       .toFixed(2) : "0.00";
   }
