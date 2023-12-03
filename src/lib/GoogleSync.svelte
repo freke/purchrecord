@@ -82,7 +82,7 @@
     onMount(async () => {
         await gapiLoadPromise;
 
-        window.google.accounts.id.initialize({
+        google.accounts.id.initialize({
             client_id: clientId,
             callback: globalThis.handleLogin,
             context: "signin",
@@ -90,7 +90,7 @@
             itp_support: true
         });
 
-        window.google.accounts.id.renderButton(
+        google.accounts.id.renderButton(
             loginButton,
             { theme: "filled_black", size: "large", shape: "pill"}
         );
