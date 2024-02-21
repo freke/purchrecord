@@ -1,31 +1,40 @@
 <script lang="ts">
-    import { purchases, type Purchase } from "../../stores/purchases";
     import { budget } from "../../stores/budget";
     import type { Budget } from "../../stores/budget";
     import { rate, convertToJPY } from "../../stores/rates";
     import {nFormatter} from "../../functions/utils";
-    import dayjs from "dayjs";
+    import dayjs, {type ManipulateType} from "dayjs";
     import { Chart, Heading, Secondary } from 'flowbite-svelte';
+    import { liveQuery } from "dexie";
+    import { db, type IPurchase } from "../db";
 
     export let category = "";
     export let currentYear = dayjs().year();
     export let selectedMonth: number | null = null;
 
-    function monthTotals(r, purchases, category, month) {
+    let intervall: ManipulateType = 'year'
+    let from_date = dayjs().startOf('year');
+    $: to_date = from_date.add(1, intervall);
+    $: purchases = liveQuery(() =>
+        db.purchases.where("date").between(from_date, to_date).toArray(),
+    );
+
+    function monthTotals(r, purchases: IPurchase[], category: string, month: number) {
+        console.log("monthly")
         if( selectedMonth == null){
-            return Object.entries(purchases)
-                .filter(([, p]: [string, Purchase]) => p.category === category)
+            return purchases
+                .filter((p: IPurchase) => p.payment.category === category)
                 .reduce(
-                    (acc, [, p]: [string, Purchase]) =>
-                        acc + convertToJPY(r, p.amount, p.currency),
+                    (acc, p: IPurchase) =>
+                        acc + convertToJPY(r, p.payment.amount, p.payment.currency.currency),
                     0
                 ).toFixed(2);
         }
-        return Object.entries(purchases)
-            .filter(([, p]: [string, Purchase]) => p.category === category && dayjs(p.date).month() === month)
+        return purchases
+            .filter((p: IPurchase) => p.payment.category === category && dayjs.unix(p.date).month() === month)
             .reduce(
-                (acc, [, p]: [string, Purchase]) =>
-                    acc + convertToJPY(r, p.amount, p.currency),
+                (acc, p: IPurchase) =>
+                    acc + convertToJPY(r, p.payment.amount, p.payment.currency.currency),
                 0
             ).toFixed(2);
     }

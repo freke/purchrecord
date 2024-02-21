@@ -11,8 +11,8 @@
     import { Avatar, Button } from 'flowbite-svelte';
     import {CloudArrowUpOutline, BadgeCheckOutline} from 'flowbite-svelte-icons';
 
-    const clientId ="732312482119-fs9q45r0j0pmfmjm1dren2hr9dodk8fn.apps.googleusercontent.com";
-    const spreadsheetId = "1P0gzwKMG_eBiPfgdaI3Ah2ABkAjJF1-eOpxms3nHy7A";
+    const clientId = "732312482119-fs9q45r0j0pmfmjm1dren2hr9dodk8fn.apps.googleusercontent.com";
+    const spreadsheetId = ""; //"1P0gzwKMG_eBiPfgdaI3Ah2ABkAjJF1-eOpxms3nHy7A";
     const purchasesSheetName = "Purchases";
     const purchasesCurrentYear = `${purchasesSheetName}${dayjs().year()}`;
     const purchasesSheetRange = "A2:H";

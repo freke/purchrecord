@@ -2,14 +2,14 @@
     import dayjs from 'dayjs';
     import { Input } from 'flowbite-svelte';
   
-    export let format = 'YYYY-MM-DD';
-    export let date = dayjs().format(format);
+    let format = 'YYYY-MM-DD';
+    export let date: number = dayjs().unix();
     export let id = "";
       
     let internal;
   
-    const input = (x) => (internal = dayjs(x).format(format));
-    const output = (x) => (date = dayjs(x).format(format));
+    const input = (x) => (internal = dayjs.unix(x).format(format));
+    const output = (x) => (date = dayjs(x).unix());
   
     $: input(date);
     $: output(internal);

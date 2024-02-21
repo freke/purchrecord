@@ -17,16 +17,16 @@
 		<TabItem open>
 			<div slot="title" class="flex items-center gap-2">
 				<CirclePlusOutline size="sm" />
-				New
+				{!id ? "New" : "Update"}
 			</div>
-			<Form/>
+			<Form bind:id={ id }/>
 		</TabItem>
 		<TabItem>
 			<div slot="title" class="flex items-center gap-2">
 				<CalendarMonthOutline size="sm" />
 				Report
 			</div>
-			<Report/>
+			<Report on:selected={(select_id) => { id = select_id}}/>
 		</TabItem>
 		<TabItem>
 			<div slot="title" class="flex items-center gap-2">
@@ -38,9 +38,9 @@
 		<TabItem>
 			<div slot="title" class="flex items-center gap-2">
 				<ArrowsRepeatOutline size="sm" />
-				Monlthly
+				Resolve
 			</div>
-			<MonlyCalculation/>
+			<Resolve/>
 		</TabItem>
 	</Tabs>
 </main>
@@ -52,11 +52,13 @@
 	import Form from "./lib/Form.svelte";
 	import Report from "./lib/Report.svelte";
 	import Budget from "./lib/Budget.svelte";
-	import MonlyCalculation from "./lib/MonlyCalculation.svelte";
+	import Resolve from "./lib/Resolve.svelte";
 	import BarLoader from "./lib/Components/BarLoader.svelte";
 
 	import { Navbar, NavBrand, Tabs, TabItem } from 'flowbite-svelte';
 	import {CirclePlusOutline, CalendarMonthOutline, ChartMixedDollarSolid, ArrowsRepeatOutline} from 'flowbite-svelte-icons';
+
+	let id : string;
 
 	const urlParams = new URLSearchParams(window.location.search);
     const isBeta = urlParams.has('beta');
@@ -66,7 +68,7 @@
 		{ name: 'new', icon: 'add_circle', component: Form   },
 		{ name: 'report', icon: 'calendar_month', component: Report },
 		{ name: 'budget', icon: 'analytics', component: Budget },
-		{ name: 'monlthly', icon: 'functions', component: MonlyCalculation},
+		{ name: 'monlthly', icon: 'functions', component: Resolve},
 	];
 	if(isBeta) {
 		//pages.push()

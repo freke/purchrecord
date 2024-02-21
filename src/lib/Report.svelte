@@ -1,21 +1,50 @@
 <script lang="ts">
-  import { purchases } from "../stores/purchases";
-  import type { Purchase } from "../stores/purchases";
   import { deleted } from "../stores/deleted";
   import Form from "./Form.svelte";
-  import {rate, convertToJPY} from '../stores/rates';
+  import { rate, convertToJPY } from "../stores/rates";
   import dayjs from "dayjs";
   import localizedFormat from "dayjs/plugin/localizedFormat";
   import Summary from "./Components/Summary.svelte";
   dayjs.extend(localizedFormat);
-  import { Button, ButtonGroup, Checkbox, Card, Modal, Heading, Hr, P } from 'flowbite-svelte';
-  import { ExclamationCircleOutline, ChevronLeftOutline, ChevronRightOutline, CheckCircleOutline, ImageOutline, TrashBinOutline, EditOutline } from 'flowbite-svelte-icons';
+  import {
+    Button,
+    ButtonGroup,
+    Checkbox,
+    Toggle,
+    Card,
+    Modal,
+    Indicator,
+    Heading,
+    Listgroup,
+    ListgroupItem,
+    Hr,
+    P,
+  } from "flowbite-svelte";
+  import {
+    ExclamationCircleOutline,
+    ChevronLeftOutline,
+    ChevronRightOutline,
+    CheckCircleOutline,
+    ImageOutline,
+    TrashBinOutline,
+    EditOutline,
+  } from "flowbite-svelte-icons";
+
+  import { liveQuery } from "dexie";
+  import { db, Purchase } from "./db";
+
+  $: purchases = liveQuery(() =>
+    db.purchases.where("date").between(from_date, to_date).toArray(),
+  );
 
   let currentMonth = dayjs().startOf("month");
+  $: from_date = dayjs(currentMonth).startOf("month").unix();
+  $: to_date = dayjs(currentMonth).startOf("month").add(1, "month").unix();
   let selectedItem;
   let showConfirmDialog = false;
   let showEditDialog = false;
   let showImageDialog = false;
+  let include_priv = false;
 
   function delete_id(purcahse) {
     selectedItem = purcahse;
@@ -23,8 +52,7 @@
   }
 
   function confirm_delete_id() {
-    delete $purchases[selectedItem.id];
-    $purchases = $purchases;
+    db.purchases.delete(selectedItem.id);
 
     if (
       selectedItem.row !== null &&
@@ -73,48 +101,54 @@
     currentMonth = currentMonth.subtract(1, "month");
   }
 
-  function purchases_categories(purchases: {[id: string]: Purchase}, year, month) {
-    return Array.from(new Set(
-      Object.entries(purchases)
-        .filter(([, p]: [string, Purchase]) => dayjs(p.date).year() == year && (month == null || dayjs(p.date).month() == month))
-        .map(([, p]: [string, Purchase]) => p.category)
-    )).map((c) => {return {name: c, selected: true}}).sort((a, b) => a.name.localeCompare(b.name));
+  function purchases_categories(purchases: Purchase[]) {
+    if (!purchases) return [];
+    let categories = Array.from(
+      new Set(purchases.map((p: Purchase) => p.payment.category)),
+    ).map((c) => {
+      return { name: c, selected: true };
+    });
+    return categories;
   }
 
-  function purchases_paied_by(purchases: {[id: string]: Purchase}, year, month) {
-    return Array.from(new Set(
-      Object.entries(purchases)
-        .filter(([, p]: [string, Purchase]) => dayjs(p.date).year() == year && (month == null || dayjs(p.date).month() == month))
-        .map(([, p]: [string, Purchase]) => p.paid || "unkown")
-    )).map((c) => {return {name: c, selected: true}}).sort((a, b) => a.name.localeCompare(b.name));
+  function purchases_paied_by(purchases: Purchase[]) {
+    if (!purchases) return [];
+    let paied = Array.from(
+      new Set(purchases.map((p: Purchase) => p.payment.paid || "unkown")),
+    ).map((c) => {
+      return { name: c, selected: true };
+    });
+    return paied;
   }
 
-  function filteredTotal(r, categories, payer) {
-    return $purchases ? Object.entries($purchases)
-      .filter(([_, value]: [string, Purchase]) => dayjs(value.date).month() == currentMonth.month() && categories.find(c => c.name == value.category) && categories.find(c => c.name == value.category).selected )
-      .filter(([_, value]: [string, Purchase]) => dayjs(value.date).month() == currentMonth.month() && payer.find(p => {
-                  var paid = value.paid || "unkown"
-                  return p.name == paid
-                }))
-      .reduce((t, [_, value]: [string, Purchase]) => t + convertToJPY(r, value.amount, value.currency), 0)
-      .toFixed(2) : "0.00";
+  function filteredTotal(r, categories, payer, include_priv) {
+    return $purchases
+      ? $purchases
+          .filter(
+            (value: Purchase) => {
+              let categorie = categories.find((c) => c.name == value.payment.category);
+              return categorie && categorie.selected && (include_priv ? true : !value.priv)
+            }
+          )
+          .filter(
+            (value: Purchase) =>
+              payer.find((p) => {
+                var paid = value.payment.paid || "unkown";
+                return p.name == paid;
+              }).selected,
+          )
+          .reduce(
+            (t, value: Purchase) =>
+              t + convertToJPY(r, value.payment.amount, value.payment.currency.currency),
+            0,
+          )
+          .toFixed(2)
+      : "0.00";
   }
 
-  $: pur = $purchases
-    ? Object.entries($purchases)
-        .filter(
-          ([, a]: [string, Purchase]) =>
-            dayjs(a.date).month() === currentMonth.month() &&
-            dayjs(a.date).year() === currentMonth.year()
-        )
-        .sort(([, a]: [string, Purchase], [, b]: [string, Purchase]) =>
-          dayjs(a.date).isAfter(dayjs(b.date)) ? 1 : -1
-        )
-        .map(([, a]: [string, Purchase]) => a)
-    : [];
-  $: categories =  purchases_categories($purchases, currentMonth.year(), currentMonth.month());
-  $: payer = purchases_paied_by($purchases, currentMonth.year(), currentMonth.month());
-  $: filtered_total = filteredTotal($rate, categories, payer);
+  $: categories = purchases_categories($purchases);
+  $: payer = purchases_paied_by($purchases);
+  $: filtered_total = filteredTotal($rate, categories, payer, include_priv);
 </script>
 
 {#if selectedItem}
@@ -130,9 +164,17 @@
 
 <Modal bind:open={showConfirmDialog} size="xs" autoclose>
   <div class="text-center">
-    <ExclamationCircleOutline class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" />
-    <Heading tag="h3" class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Are you sure you want to delete?</Heading>
-    <Button color="red" class="mr-2" on:click={confirm_delete_id}>Yes, I'm sure</Button>
+    <ExclamationCircleOutline
+      class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200"
+    />
+    <Heading
+      tag="h3"
+      class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400"
+      >Are you sure you want to delete?</Heading
+    >
+    <Button color="red" class="mr-2" on:click={confirm_delete_id}
+      >Yes, I'm sure</Button
+    >
     <Button color="alternative" on:click={cancel_dialog}>No, cancel</Button>
   </div>
 </Modal>
@@ -145,94 +187,135 @@
   />
 </Modal>
 
-<Card size="xl" class="my-4">
-  <Summary month={currentMonth} {pur} />
-  <div class="justify-center items-center space-y-4 sm:flex sm:space-y-0 sm:space-x-4">
-    <ButtonGroup>
-      <Button on:click={prevMonth}>
-        <ChevronLeftOutline />
-      </Button>
-      <Button color={isInCurrentMonth(currentMonth)?"primary":"alternative"}>
-        <span>{currentMonth.format("MMM YYYY")}</span>
-      </Button>
-      <Button on:click={nextMonth}>
-        <ChevronRightOutline />
-      </Button>
-    </ButtonGroup>
-  </div>
-</Card>
+<div class="flex flex-wrap gap-1">
+  <Card class="font-medium grow" size="xl">
+    <Summary purchases={$purchases} />
+    <div
+      class="justify-center items-center space-y-4 sm:flex sm:space-y-0 sm:space-x-4"
+    >
+      <ButtonGroup>
+        <Button on:click={prevMonth}>
+          <ChevronLeftOutline />
+        </Button>
+        <Button
+          color={isInCurrentMonth(currentMonth) ? "primary" : "alternative"}
+        >
+          <span>{currentMonth.format("MMM YYYY")}</span>
+        </Button>
+        <Button on:click={nextMonth}>
+          <ChevronRightOutline />
+        </Button>
+      </ButtonGroup>
+    </div>
+  </Card>
 
-<Card size="xl" class="my-4">
-  <Heading tag="h3">Category Filter</Heading>
-  <div class="flex flex-row flex-wrap">
-    {#each categories as category}
-      <div class="basis-1/6">
-        <Checkbox checked={category.selected} on:change={() => category.selected = !category.selected}>{category.name}</Checkbox>
+  <Card class="font-medium grow" size="xl">
+    <Heading tag="h4">Category Filter</Heading>
+    <div class="flex flex-row flex-wrap">
+      {#each categories as category}
+        <div class="basis-1/5">
+          <Checkbox
+            checked={category.selected}
+            on:change={() => (category.selected = !category.selected)}
+            >{category.name}</Checkbox
+          >
+        </div>
+      {/each}
+    </div>
+    <Heading tag="h4" class="mt-4">Payer Filter</Heading>
+    <div class="flex flex-row flex-wrap">
+      {#each payer as payed_by}
+        <div class="basis-1/5">
+          <Checkbox
+            checked={payed_by.selected}
+            on:change={() => (payed_by.selected = !payed_by.selected)}
+            >{payed_by.name}</Checkbox
+          >
+        </div>
+      {/each}
+      <div class="basis-1/5">
+        <Toggle size="small"
+          checked={include_priv}
+          on:change={() => (include_priv = !include_priv)}
+          >
+        Include private
+        </Toggle>
       </div>
-    {/each}
-  </div>
-  <Heading tag="h3" class="mt-4">Payer Filter</Heading>
-  <div class="flex flex-row flex-wrap">
-    {#each payer as payed_by}
-      <div class="basis-1/6">
-        <Checkbox checked={payed_by.selected} on:change={() => payed_by.selected = !payed_by.selected}>{payed_by.name}</Checkbox>
-      </div>
-    {/each}
-  </div>
-  <Hr classHr="my-8"/>
-  <Heading tag="h2">Filterd Total: {filtered_total} JPY</Heading>
-</Card>
+    </div>
+    <Hr classHr="my-8" />
+    <Heading tag="h3">Filterd Total: {filtered_total}¥</Heading>
+  </Card>
+</div>
 
-<div class="w-full mt-8 p-4">
-{#each pur as cardData}
-  {#if categories.find((c) => c.name == cardData.category).selected}
-    {#if payer.find((c) => c.name == (cardData.paid || "unkown")).selected}
-      <div class="flex flex-row space-x-4 items-center">
-        {#if cardData.sync}
-          <CheckCircleOutline class="text-green-400"/>
-        {:else}
-          <ExclamationCircleOutline class="text-red-400"/>
-        {/if}
-        <div class="grow">
-          <div>
-            <span class="large bold"
-              >{cardData.amount.toFixed(2)} {cardData.currency}</span
-            > <span>{cardData.category || ""}</span>
-          </div>
-          <div class="flex flex-row">
-            <P size="sm">{dayjs(cardData.date).format("L")}</P>
-            {#if cardData.paid}
-              <P size="sm" weight="bold" class="ml-2">Paid:</P><P size="sm">{cardData.paid}</P>
+<Listgroup class="w-full mt-8 p-4">
+  <h3 class="p-1 text-center text-xl font-medium text-gray-900 dark:text-white">Purchases</h3>
+  {#each $purchases || [] as cardData}
+    {#if categories.find((c) => c.name == cardData.payment.category).selected && 
+      payer.find((c) => c.name == (cardData.payment.paid || "unkown")).selected &&
+      (include_priv ? true : !cardData.priv)}
+      <ListgroupItem class="relative flex content-start">
+          {#if cardData.sync}
+            <CheckCircleOutline class="text-green-400 m-2" />
+          {:else}
+            <ExclamationCircleOutline class="text-red-400 m-2" />
+          {/if}
+          {#if cardData.priv}
+          <Indicator color="blue" rounded size="xl" placement="top-left" class="text-xs text-white dark:text-white px-4">priv</Indicator>
+          {/if}
+          <div class="grow">
+            <div>
+              <span class="large bold">
+                {cardData.payment.amount.toFixed(2)} {cardData.payment.currency.currency}
+              </span> <span>{cardData.payment.category || ""}</span>
+            </div>
+            <div class="flex flex-row">
+              <P size="sm">{dayjs.unix(cardData.date).format("YYYY-MM-DD")}</P>
+              {#if cardData.payment.paid}
+                <P size="sm" weight="bold" class="ml-2">Paid:</P><P size="sm"
+                  >{cardData.payment.paid}</P
+                >
+              {/if}
+            </div>
+            {#if cardData.note}
+            <P size="sm">{cardData.note}</P>
             {/if}
           </div>
-          <P size="sm">{cardData.note}</P>
-        </div>
-        {#if cardData.image}
-          {#if cardData.sync}
-            <a href={cardData.image}>
-              <ImageOutline />
-            </a>
-          {:else}
-            <Button outline={true} class="!p-2 m-1" on:click={() => show_image(cardData)}>
-              <ImageOutline class="w-4 h-4"/>
+          {#if cardData.file}
+            {#if cardData.sync}
+              <a href={cardData.file}>
+                <ImageOutline />
+              </a>
+            {:else}
+              <Button
+                outline={true}
+                class="!p-2 m-1 w-8 h-8"
+                on:click={() => show_image(cardData)}
+              >
+                <ImageOutline class="w-4 h-4" />
+              </Button>
+            {/if}
+          {/if}
+
+          {#if !cardData.sync}
+            <Button
+              outline={true}
+              class="!p-2 m-1 w-8 h-8"
+              on:click={() => edit_purchase(cardData)}
+            >
+              <EditOutline class="w-4 h-4" />
             </Button>
           {/if}
-        {/if}
-
-        {#if !cardData.sync}
-          <Button outline={true} class="!p-2 m-1" on:click={() => edit_purchase(cardData)}>
-            <EditOutline class="w-4 h-4"/>
+          <Button
+            outline={true}
+            class="!p-2 m-1 w-8 h-8"
+            on:click={() => delete_id(cardData)}
+          >
+            <TrashBinOutline class="w-4 h-4" />
           </Button>
-        {/if}
-        <Button outline={true} class="!p-2 m-1" on:click={() => delete_id(cardData)}>
-          <TrashBinOutline class="w-4 h-4"/>
-        </Button>
-      </div>
-      <Hr classHr="my-1"/>
+        </ListgroupItem>
     {/if}
-  {/if}
-{/each}
-</div>
+  {/each}
+</Listgroup>
 
 <style>
 </style>
