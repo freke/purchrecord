@@ -12,7 +12,7 @@ dependencies:
 devDependencies:
   '@sveltejs/vite-plugin-svelte':
     specifier: ^2.4.6
-    version: 2.4.6(svelte@4.2.1)(vite@4.5.2)
+    version: 2.4.6(svelte@4.2.1)(vite@4.5.3)
   '@tsconfig/svelte':
     specifier: ^3.0.0
     version: 3.0.0
@@ -71,8 +71,8 @@ devDependencies:
     specifier: ^9.0.1
     version: 9.0.1
   vite:
-    specifier: ^4.5.2
-    version: 4.5.2
+    specifier: ^4.5.3
+    version: 4.5.3
 
 packages:
 
@@ -341,15 +341,15 @@ packages:
       '@types/gapi.client.discovery-v1': 0.0.2
     dev: true
 
-  /@maxim_mazurok/gapi.client.drive-v3@0.0.20240118:
-    resolution: {integrity: sha512-hCBTOZ0Tf1iWEVB3i0iyp4WRt7oTQFB/NpNl/ApI6YIRlv0RiiaQrhU9GG3kbpkGciLaeIJsNVt9Po0+chAq/A==}
+  /@maxim_mazurok/gapi.client.drive-v3@0.0.20240331:
+    resolution: {integrity: sha512-fwVQggLOwv3c6fafdYFXXuhYihQ4UOLNFVjoCdEblY6SoqaguaPAwk1ti2KHqbxmRHubrS2xL81/G/N3u1Ro1Q==}
     dependencies:
       '@types/gapi.client': 1.0.6
       '@types/gapi.client.discovery-v1': 0.0.2
     dev: true
 
-  /@maxim_mazurok/gapi.client.sheets-v4@0.0.20240102:
-    resolution: {integrity: sha512-P8sxU5sPlqPjGURyzUP867Rw+ygFe5oSXCcD6eL9nkifMyzEC1EXY/rxZNmUQJ3IW2tDJ4xRBa/fv1K+5HmjOA==}
+  /@maxim_mazurok/gapi.client.sheets-v4@0.0.20240326:
+    resolution: {integrity: sha512-FzxXOHEv0i+j4VnfRIuu56BqgoTsrU8w9Y/gXcscRr1JuoVhloFNkbrM2OVmHd4FL/vVDwyTWd4hT5FTGDGLbw==}
     dependencies:
       '@types/gapi.client': 1.0.6
       '@types/gapi.client.discovery-v1': 0.0.2
@@ -380,7 +380,7 @@ packages:
     resolution: {integrity: sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==}
     dev: true
 
-  /@sveltejs/vite-plugin-svelte-inspector@1.0.4(@sveltejs/vite-plugin-svelte@2.4.6)(svelte@4.2.1)(vite@4.5.2):
+  /@sveltejs/vite-plugin-svelte-inspector@1.0.4(@sveltejs/vite-plugin-svelte@2.4.6)(svelte@4.2.1)(vite@4.5.3):
     resolution: {integrity: sha512-zjiuZ3yydBtwpF3bj0kQNV0YXe+iKE545QGZVTaylW3eAzFr+pJ/cwK8lZEaRp4JtaJXhD5DyWAV4AxLh6DgaQ==}
     engines: {node: ^14.18.0 || >= 16}
     peerDependencies:
@@ -388,30 +388,30 @@ packages:
       svelte: ^3.54.0 || ^4.0.0
       vite: ^4.0.0
     dependencies:
-      '@sveltejs/vite-plugin-svelte': 2.4.6(svelte@4.2.1)(vite@4.5.2)
+      '@sveltejs/vite-plugin-svelte': 2.4.6(svelte@4.2.1)(vite@4.5.3)
       debug: 4.3.4
       svelte: 4.2.1
-      vite: 4.5.2
+      vite: 4.5.3
     transitivePeerDependencies:
       - supports-color
     dev: true
 
-  /@sveltejs/vite-plugin-svelte@2.4.6(svelte@4.2.1)(vite@4.5.2):
+  /@sveltejs/vite-plugin-svelte@2.4.6(svelte@4.2.1)(vite@4.5.3):
     resolution: {integrity: sha512-zO79p0+DZnXPnF0ltIigWDx/ux7Ni+HRaFOw720Qeivc1azFUrJxTl0OryXVibYNx1hCboGia1NRV3x8RNv4cA==}
     engines: {node: ^14.18.0 || >= 16}
     peerDependencies:
       svelte: ^3.54.0 || ^4.0.0
       vite: ^4.0.0
     dependencies:
-      '@sveltejs/vite-plugin-svelte-inspector': 1.0.4(@sveltejs/vite-plugin-svelte@2.4.6)(svelte@4.2.1)(vite@4.5.2)
+      '@sveltejs/vite-plugin-svelte-inspector': 1.0.4(@sveltejs/vite-plugin-svelte@2.4.6)(svelte@4.2.1)(vite@4.5.3)
       debug: 4.3.4
       deepmerge: 4.3.1
       kleur: 4.1.5
       magic-string: 0.30.5
       svelte: 4.2.1
       svelte-hmr: 0.15.3(svelte@4.2.1)
-      vite: 4.5.2
-      vitefu: 0.2.5(vite@4.5.2)
+      vite: 4.5.3
+      vitefu: 0.2.5(vite@4.5.3)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -433,13 +433,13 @@ packages:
   /@types/gapi.client.drive-v3@0.0.1:
     resolution: {integrity: sha512-tIvUpcfeTZI5yRYWAPo/kx6w8kAfW8HeOAJPmXlhVpSBUO8R4hUVZiZhuc6PxNtQkI6LKXeyOuJv70Nd3Nb/8g==}
     dependencies:
-      '@maxim_mazurok/gapi.client.drive-v3': 0.0.20240118
+      '@maxim_mazurok/gapi.client.drive-v3': 0.0.20240331
     dev: true
 
   /@types/gapi.client.sheets-v4@0.0.1:
     resolution: {integrity: sha512-1Ts3l9jUIvc6VW0MmOa8c3biq8RtESx1yMTrtOY6dw0bvdbmuwZyQMVQWMOeUw1mTlM7WLQi7cKmp/TGOCJtIg==}
     dependencies:
-      '@maxim_mazurok/gapi.client.sheets-v4': 0.0.20240102
+      '@maxim_mazurok/gapi.client.sheets-v4': 0.0.20240326
     dev: true
 
   /@types/gapi.client@1.0.6:
@@ -1299,8 +1299,8 @@ packages:
     hasBin: true
     dev: true
 
-  /vite@4.5.2:
-    resolution: {integrity: sha512-tBCZBNSBbHQkaGyhGCDUGqeo2ph8Fstyp6FMSvTtsXeZSPpSMGlviAOav2hxVTqFcx8Hj/twtWKsMJXNY0xI8w==}
+  /vite@4.5.3:
+    resolution: {integrity: sha512-kQL23kMeX92v3ph7IauVkXkikdDRsYMGTVl5KY2E9OY4ONLvkHf04MDTbnfo6NKxZiDLWzVpP5oTa8hQD8U3dg==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
     peerDependencies:
@@ -1334,7 +1334,7 @@ packages:
       fsevents: 2.3.3
     dev: true
 
-  /vitefu@0.2.5(vite@4.5.2):
+  /vitefu@0.2.5(vite@4.5.3):
     resolution: {integrity: sha512-SgHtMLoqaeeGnd2evZ849ZbACbnwQCIwRH57t18FxcXoZop0uQu0uzlIhJBlF/eWVzuce0sHeqPcDo+evVcg8Q==}
     peerDependencies:
       vite: ^3.0.0 || ^4.0.0 || ^5.0.0
@@ -1342,7 +1342,7 @@ packages:
       vite:
         optional: true
     dependencies:
-      vite: 4.5.2
+      vite: 4.5.3
     dev: true
 
   /wrappy@1.0.2:
